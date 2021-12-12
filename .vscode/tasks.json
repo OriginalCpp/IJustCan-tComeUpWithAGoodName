@@ -1,0 +1,31 @@
+{
+    // See https://go.microsoft.com/fwlink/?LinkId=733558
+    // for the documentation about the tasks.json format
+    "version": "2.0.0",
+    "tasks": [
+        {
+            "label": "Build",
+            "type": "shell",
+            "command": "g++",
+            "args": [
+                "-o",
+                "C:/C++/JumpyMagician/build/JumpyMagician.exe",
+                "C:/C++/JumpyMagician/src/*.cpp",
+                "-g",
+                "-Wall",
+                "-IC:/C++/JumpyMagician/include",
+                "-IC:/SDL-w64/include/SDL2",
+                "-LC:/SDL-w64/lib",
+                "-lmingw32",
+                "-lSDL2main",
+                "-lSDL2",
+                "-lSDL2_image",
+            ],
+
+            "group":{
+                "kind": "build",
+                "isDefault": true
+            }
+        }
+    ]
+}
