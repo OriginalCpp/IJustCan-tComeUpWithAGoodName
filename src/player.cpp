@@ -4,8 +4,8 @@
 #include <SDL.h>
 #include <iostream>
 
-Player::Player(SDL_Texture* p_tex, SDL_Rect p_src, SDL_Rect p_dst, int p_w, int p_h)
-	:GameObject{p_tex, p_src, p_dst, p_w, p_h}
+Player::Player(SDL_Texture* p_tex, SDL_Rect p_src, SDL_Rect p_dst)
+	:GameObject{p_tex, p_src, p_dst}
 {
 
 }
@@ -47,6 +47,10 @@ void Player::move(float p_dt, int p_speed, int p_gravity) {
 
 float* Player::detectCollision(GameObject* p_gameObject)
 {
+	if(p_gameObject == NULL)
+	{
+		return (NULL);
+	}
 	float objectX = p_gameObject->getX();
 	float objectY = p_gameObject->getY();
 	int objectH {p_gameObject->getH()};

@@ -1,6 +1,7 @@
 #include "RenderWindow.hpp"
 #include "GameObject.hpp"
 #include "Player.hpp"
+#include "Tiles.hpp"
 #include "utils.hpp"
 #include "Levels.hpp"
 #include "Globals.hpp"
@@ -33,13 +34,13 @@ int main(int argc, char* argv[])
 	
 	RenderWindow window("JumpyMagician", 1920, 1280);
 
-	bool gameRunning = true;
+	bool gameRunning {true};
 
-	int stage = 1;
+	int level {1};
 
-	Player player(utils::loadTexture("../res/player/maincharacter.png", window.getRenderer()), utils::createRect(0,0,16, 23), utils::createRect(200, 200, 64, 64), 64, 92);
-	std::vector<GameObject*> objects;
-	if (levels::setUpLevel(stage, player, objects, window.getRenderer()) > 0)
+	Player player(utils::loadTexture("../res/player/maincharacter.png", window.getRenderer()), utils::createRect(0,0,16, 23), utils::createRect(200, 200, 16*constants::scale, 23*constants::scale));
+	std::vector<std::vector<Tile*>> tiles;
+	if (levels::setUpLevel(level, player, tiles, window.getRenderer()) > 0)
 	{
 		std::cout << "Error: levels::setUpLevel() failed\n";
 		gameRunning = false;
@@ -100,20 +101,24 @@ int main(int argc, char* argv[])
 		}
 		player.move(dt, player_speed, gravity);
 		grounded = false;
-		for(int i = 0; i < (static_cast<int>(objects.size() - 1)); i++)
+		for(int i = 0; i < (static_cast<int>(tiles.size())); i++)
 		{
-			
-			collisionPointPtr = player.detectCollision(objects[i]);
-			if(collisionPointPtr != NULL)
+			for(int j = 0; j < (static_cast<int>(tiles[0].size())); ++j)
 			{
-				if (utils::resolveCollision(&player, collisionPointPtr, objects[i]))
+				collisionPointPtr = player.detectCollision(tiles[i][j]);
+				if(collisionPointPtr != NULL)
 				{
-					amountOfJumps = constants::maxAmountOfJumps;
-					grounded = true;
+					if (utils::resolveCollision(&player, collisionPointPtr, tiles[i][j]))
+					{
+						amountOfJumps = constants::maxAmountOfJumps;
+						grounded = true;
+					}
+					delete collisionPointPtr;
 				}
-				delete collisionPointPtr;
+				collisionPointPtr = NULL;
 			}
-			collisionPointPtr = NULL;
+			
+			
 		}
 		if(!grounded)
 		{
@@ -123,9 +128,18 @@ int main(int argc, char* argv[])
 			}
 		}
 		window.clear();
-		for (int i = 0; i < (static_cast<int>(objects.size())); ++i) {
-			window.render(objects[i]);
+		for (int i = 0; i < (static_cast<int>(tiles.size())); ++i) 
+		{
+			for(int j = 0; j < static_cast<int>(tiles[0].size()); ++j)
+			{
+				if(tiles[i][j] != NULL)
+				{
+					window.render(tiles[i][j]);
+				}
+			}
+			
 		}
+		window.render(&player);
 		window.display();
 	}
 

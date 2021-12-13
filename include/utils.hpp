@@ -11,4 +11,5 @@ namespace utils {
 	bool resolveCollision(Player* p_dynamicGameObject, float* p_collisionPoint, GameObject* p_staticGameObject);
 	SDL_Texture* loadTexture(const char* p_filePath, SDL_Renderer* p_renderer);
 	Player* setUpPlayer(SDL_Renderer* p_renderer);
+	void selectTiles(std::vector<GameObject*>& p_tiles);
 }

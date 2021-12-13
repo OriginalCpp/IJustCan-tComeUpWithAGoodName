@@ -4,9 +4,11 @@
 class GameObject {
 public:
 	GameObject();
-	GameObject(SDL_Texture* p_texture, SDL_Rect p_src, SDL_Rect p_dst, int p_w, int p_h);
+	GameObject(SDL_Texture* p_texture, SDL_Rect p_src, SDL_Rect p_dst);
 	SDL_Texture* getTexture();
+	void setTexture(SDL_Texture* p_tex);
 	SDL_Rect* getSrc();
+	void setSrc(SDL_Rect p_src);
 	SDL_Rect* getDst();
 	float getX();
 	float getY();
@@ -17,7 +19,6 @@ public:
 	int getW();
 	int getH();
 	float* getpP();
-	//void move(float* dt);
 	
 protected:
 	SDL_Texture* texture = NULL;
