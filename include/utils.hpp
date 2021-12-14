@@ -1,6 +1,7 @@
 #pragma once
 #include "GameObject.hpp"
 #include "Player.hpp"
+#include "Tiles.hpp"
 #include <SDL.h>
 #include <vector>
 
@@ -10,6 +11,5 @@ namespace utils {
 	bool collision_PointVsRect(float* p_point, float* p_rectOrigin, int p_rectWidth, int p_rectHeight);
 	bool resolveCollision(Player* p_dynamicGameObject, float* p_collisionPoint, GameObject* p_staticGameObject);
 	SDL_Texture* loadTexture(const char* p_filePath, SDL_Renderer* p_renderer);
-	Player* setUpPlayer(SDL_Renderer* p_renderer);
-	void selectTiles(std::vector<GameObject*>& p_tiles);
+	void selectTiles(std::vector<std::vector<Tile*>>& p_tiles);
 }

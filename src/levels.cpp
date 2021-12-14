@@ -62,6 +62,8 @@ bool levels::setUpLevel1(Player& p_player, std::vector<std::vector<Tile*>>& p_ti
 
 
 
+	utils::selectTiles(p_tiles);	
+
 	/*p_objects.push_back(new GameObject(grassTexture, utils::createRect(0, 0, 16, 16), utils::createRect(i*64, 450, 64, 64), 64, 64));
 		p_objects.push_back(new GameObject(grassTexture, utils::createRect(0, 0, 16, 16), utils::createRect(i*64, 514, 64, 64), 64, 64));
 	GameObject* theG = new GameObject(grassTexture, utils::createRect(0, 0, 16, 16), utils::createRect(320, 386, 64, 64), 64, 64);
@@ -71,9 +73,9 @@ bool levels::setUpLevel1(Player& p_player, std::vector<std::vector<Tile*>>& p_ti
     p_objects.push_back(theG);
 	p_objects.push_back(theG2);
 	p_objects.push_back(theG3);
-	p_objects.push_back(theG4); //player has to be last object in objects!!!!!! 
+	p_objects.push_back(theG4); //player has to be last object in objects!!!!!!*/ 
 
-	utils::selectTiles(p_objects);	*/
+	
 
 	return(1);
 }

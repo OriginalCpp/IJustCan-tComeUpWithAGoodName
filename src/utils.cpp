@@ -172,66 +172,98 @@ SDL_Texture* utils::loadTexture(const char* p_filePath, SDL_Renderer* p_renderer
 	return(texture);
 }
 
-Player* utils::setUpPlayer(SDL_Renderer* p_renderer)
-{
-	SDL_Texture* playerStanding = utils::loadTexture("../res/player/maincharacter.png", p_renderer);
-    Player* player = new Player(playerStanding, utils::createRect(0, 0, 16, 23), utils::createRect(190, 350, 64, 92));
-	return(player);
-}
-
 //checks for each tile for adjancent tiles and then sets the texture(s) so that they match
 
-void utils::selectTiles(std::vector<GameObject*>& p_tiles)
+void utils::selectTiles(std::vector<std::vector<Tile*>>& p_tiles)
 {
-	int tileX {};
-	int tileY {};
-	int otherTileX {};
-	int otherTileY {};
 
 	for(int i = 0; i < (static_cast<int>(p_tiles.size())); ++i)
 	{
-		bool top {};
-		bool right {};
-		bool below{};
-		bool left {};
-		tileX = p_tiles[i]->getX();
-		tileY = p_tiles[i]->getY();
-		for(int j = 0; j < (static_cast<int>(p_tiles.size())); ++j)
+		for(int j = 0; j < (static_cast<int>(p_tiles[0].size())); ++j)
 		{
-			otherTileX = p_tiles[j]->getX();
-			otherTileY = p_tiles[j]->getY();
-			std::cout << "otherTileX: " << otherTileX << '\n';
-			std::cout << "tileX: " << tileX << '\n';
-			std::cout << "otherTileY: " << otherTileY << '\n';
-			std::cout << "tileY: " << tileY << '\n';
-			std::cout << "expression: " << ((otherTileX == tileX) && ((otherTileY + 64) == tileY)) << '\n';
-			if((otherTileX == tileX) && (otherTileY + 64 == tileY))
-				top = true;	
-			
-			else if((otherTileX - 64 == tileX) && (otherTileY == tileY))
+			if(p_tiles[i][j] == NULL)
+			{
+				continue;
+			}
+
+			/*while(p_tiles[i][j] == NULL)
+			{
+				++j;
+				if(j == (static_cast<int>(p_tiles[0].size()) - 1))
+				{
+					++i;
+
+				}
+			}*/
+			bool top {};
+			bool right {};
+			bool below{};
+			bool left {};
+
+			if (i > 0)
+			{
+				if(p_tiles[i - 1][j] != NULL)
+					top = true;
+			}
+			else
+				top = true;
+
+			if (j < (static_cast<int>(p_tiles[0].size()) - 1))
+			{
+				if(p_tiles[i][j+1] != NULL)
 				right = true;
-			
-			else if((otherTileX == tileX) && (otherTileY - 64 == tileY))
+			}
+			else
+			 	right = true;
+	
+			if(i < (static_cast<int>(p_tiles.size()) - 1))
+			{
+				if(p_tiles[i + 1][j] != NULL)
+				below = true;
+			}
+			else	
 				below = true;
 
-			else if((otherTileX + 64 == tileX) && (otherTileY == tileY))
+			if(j > 0)
+			{
+				if(p_tiles[i][j - 1] != NULL)
+					left = true;
+			}
+			else 
 				left = true;
 
-			if(top && right && below && left)
-			{
-				j = static_cast<int>(p_tiles.size());
-			}
+			if(!top && !right && !below && !left)
+				p_tiles[i][j]->setSrc(utils::createRect(0, 0, 16, 16));
+			else if(!right && !below && !left)
+				p_tiles[i][j]->setSrc(utils::createRect(16, 0, 16, 16));
+			else if(!top && !below && !left)
+				p_tiles[i][j]->setSrc(utils::createRect(16*2, 0, 16, 16));
+			else if(!top && !right && !left)
+				p_tiles[i][j]->setSrc(utils::createRect(16*3, 0, 16, 16));
+			else if(!top && !right && !below)
+				p_tiles[i][j]->setSrc(utils::createRect(0, 16, 16, 16));
+			else if(!below && !left)
+				p_tiles[i][j]->setSrc(utils::createRect(16, 16, 16, 16));
+			else if(!right && !left)
+				p_tiles[i][j]->setSrc(utils::createRect(16*2, 16, 16, 16));
+			else if(!right && !below)
+				p_tiles[i][j]->setSrc(utils::createRect(16*3, 16, 16, 16));
+			else if(!top && !left)
+				p_tiles[i][j]->setSrc(utils::createRect(0, 32, 16, 16));
+			else if(!top && !below)
+				p_tiles[i][j]->setSrc(utils::createRect(16, 32, 16, 16));
+			else if(!top && !right)
+				p_tiles[i][j]->setSrc(utils::createRect(16*2, 32, 16, 16));
+			else if(!left)
+				p_tiles[i][j]->setSrc(utils::createRect(16*3, 32, 16, 16));
+			else if(!below)
+				p_tiles[i][j]->setSrc(utils::createRect(0, 48, 16, 16));
+			else if(!top)
+				p_tiles[i][j]->setSrc(utils::createRect(16, 48, 16, 16));
+			else if(!right)
+				p_tiles[i][j]->setSrc(utils::createRect(16*2, 48, 16, 16));
+			else
+				p_tiles[i][j]->setSrc(utils::createRect(16*3, 48, 16, 16));
 		}
-
-		if(!top && !right && !below && !left)
-			p_tiles[i]->setSrc(utils::createRect(0, 0, 16, 16));
-		else if(!right && !below && !left)
-			p_tiles[i]->setSrc(utils::createRect(16, 0, 16, 16));
-		else if(!top && !below && !left)
-			p_tiles[i]->setSrc(utils::createRect(16*2, 0, 16, 16));
-		else if(!top && !right && !left)
-			p_tiles[i]->setSrc(utils::createRect(16*3, 0, 16, 16));
-		else if(!top && !right && !below)
-			p_tiles[i]->setSrc(utils::createRect(0, 16, 16, 16));
 	}
 }
