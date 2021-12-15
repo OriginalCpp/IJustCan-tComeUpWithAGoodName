@@ -18,9 +18,9 @@ void GameObject::setTexture(SDL_Texture* p_tex)
 	texture = p_tex;
 }
 
-SDL_Rect* GameObject::getSrc()
+SDL_Rect GameObject::getSrc()
 {
-	return(&src);
+	return(src);
 }
 
 void GameObject::setSrc(SDL_Rect p_src)
@@ -28,9 +28,9 @@ void GameObject::setSrc(SDL_Rect p_src)
 	src = p_src;
 }
 
-SDL_Rect* GameObject::getDst()
+SDL_Rect GameObject::getDst()
 {
-	return(&dst);
+	return(dst);
 }
 
 float GameObject::getX()
@@ -46,11 +46,13 @@ float GameObject::getY()
 void GameObject::setX(float p_x)
 {
 	x = p_x;
+	dst.x = p_x;
 }
 
 void GameObject::setY(float p_y)
 {
 	y = p_y;
+	dst.y = p_y;
 }
 
 float* GameObject::getVector() {

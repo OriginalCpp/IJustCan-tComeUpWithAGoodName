@@ -2,6 +2,7 @@
 #include "GameObject.hpp"
 #include "Player.hpp"
 #include "Tiles.hpp"
+#include "Camera.hpp"
 #include "utils.hpp"
 #include "Levels.hpp"
 #include "Globals.hpp"
@@ -38,7 +39,9 @@ int main(int argc, char* argv[])
 
 	int level {1};
 
-	Player player(utils::loadTexture("../res/player/maincharacter.png", window.getRenderer()), utils::createRect(0,0,16, 23), utils::createRect(200, 200, 16*constants::scale, 23*constants::scale));
+	Player player(utils::loadTexture("../res/player/maincharacter.png", window.getRenderer()), utils::createRect(0,0,16, 23), utils::createRect(200, 11*64, 16*constants::scale, 23*constants::scale));
+	Camera camera(utils::createRect(player.getX() - 64, player.getY() - 64, 128, 128), &player);
+
 	std::vector<std::vector<Tile*>> tiles;
 	if (levels::setUpLevel(level, player, tiles, window.getRenderer()) > 0)
 	{
@@ -49,9 +52,10 @@ int main(int argc, char* argv[])
 	SDL_Event event;
 	float dt {};
 	float* collisionPointPtr {NULL};
-	int player_speed {350};
+	int player_speed {400};
 	int amountOfJumps {constants::maxAmountOfJumps};
 	bool grounded {};
+	int* offsetToApply {};
 	int gravity {3500};
 	float currentFrameTime{static_cast<float>(SDL_GetTicks())/1000};
 	float previousFrameTime{};
@@ -126,6 +130,24 @@ int main(int argc, char* argv[])
 			{
 				--amountOfJumps;
 			}
+		}
+		offsetToApply = camera.trackPlayer();
+		if(offsetToApply != NULL)
+		{
+			for(int i = 0; i < static_cast<int>(tiles.size()); ++i)
+			{
+				for(int j = 0; j < static_cast<int>(tiles[0].size()); ++j)
+				{
+					if (tiles[i][j] != NULL)
+					{
+						tiles[i][j]->setX(tiles[i][j]->getX() + offsetToApply[0]);
+						tiles[i][j]->setY(tiles[i][j]->getY() + offsetToApply[1]);
+					}
+				}
+			}
+			player.setX(player.getX() + offsetToApply[0]);
+			player.setY(player.getY() + offsetToApply[1]);
+			offsetToApply = NULL;
 		}
 		window.clear();
 		for (int i = 0; i < (static_cast<int>(tiles.size())); ++i) 

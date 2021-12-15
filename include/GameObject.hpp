@@ -7,9 +7,9 @@ public:
 	GameObject(SDL_Texture* p_texture, SDL_Rect p_src, SDL_Rect p_dst);
 	SDL_Texture* getTexture();
 	void setTexture(SDL_Texture* p_tex);
-	SDL_Rect* getSrc();
+	SDL_Rect getSrc();
 	void setSrc(SDL_Rect p_src);
-	SDL_Rect* getDst();
+	SDL_Rect getDst();
 	float getX();
 	float getY();
 	void setX(float p_x);

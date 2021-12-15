@@ -34,48 +34,30 @@ bool levels::setUpLevel(int p_level, Player& p_player, std::vector<std::vector<T
 bool levels::setUpLevel1(Player& p_player, std::vector<std::vector<Tile*>>& p_tiles, SDL_Renderer* p_renderer)
 {
 	int rows {1280/(16*constants::scale)};
-	int columns {1920/(16*constants::scale)};
+	int columns {2*1920/(16*constants::scale)};
     SDL_Texture* grassTexture = utils::loadTexture("../res/tileset/sortedTileset.png", p_renderer);
 
 	for (int i = 0; i < rows; ++i) 
 	{
 		std::vector<Tile*>* row = new std::vector<Tile*>;
-		switch(i)
+		if(i >= 12)
 		{
-			case 11:
-			case 12:
-			case 13:
-				for(int j = 0; j < columns; ++j)
-				{
+			for(int j = 0; j < columns; ++j)
+			{
 					row->push_back(new Tile(grassTexture, utils::createRect(0, 0, 16, 16), utils::createRect(j*constants::scale*16, i*constants::scale*16, 16*constants::scale, 16*constants::scale)));
-				}
-				break;
-			default:
-				for(int j = 0; j < columns; ++j)
-				{
-					row->push_back(NULL);
-				}
-				break;
+			}
+		}
+		else
+		{
+			for(int j = 0; j < columns; ++j)
+			{
+				row->push_back(NULL);
+			}
 		}
 		p_tiles.push_back(*row);
     }
 
-
-
 	utils::selectTiles(p_tiles);	
-
-	/*p_objects.push_back(new GameObject(grassTexture, utils::createRect(0, 0, 16, 16), utils::createRect(i*64, 450, 64, 64), 64, 64));
-		p_objects.push_back(new GameObject(grassTexture, utils::createRect(0, 0, 16, 16), utils::createRect(i*64, 514, 64, 64), 64, 64));
-	GameObject* theG = new GameObject(grassTexture, utils::createRect(0, 0, 16, 16), utils::createRect(320, 386, 64, 64), 64, 64);
-	GameObject* theG2 = new GameObject(grassTexture, utils::createRect(0, 0, 16, 16), utils::createRect(640, 324, 64, 64), 64, 64);
-	GameObject* theG3 = new GameObject(grassTexture, utils::createRect(0, 0, 16, 16), utils::createRect(960, 260, 64, 64), 64, 64);
-	GameObject* theG4 = new GameObject(grassTexture, utils::createRect(0, 0, 16, 16), utils::createRect(1024, 260, 64, 64), 64, 64);
-    p_objects.push_back(theG);
-	p_objects.push_back(theG2);
-	p_objects.push_back(theG3);
-	p_objects.push_back(theG4); //player has to be last object in objects!!!!!!*/ 
-
-	
 
 	return(1);
 }

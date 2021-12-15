@@ -23,10 +23,10 @@ SDL_Rect utils::createRect(int p_x, int p_y, int p_width, int p_height)
 
 //checks for collision between a point and a rectangle (1 = collision detected; 0 = no collision)
 
-bool utils::collision_PointVsRect(float* p_point, float* p_rectOrigin, int p_rectWidth, int p_rectHeight)
+bool utils::collision_PointVsRect(float* p_point, SDL_Rect rect)
 {
-	if((p_point[0] >= p_rectOrigin[0]) && (p_point[0] <= (p_rectOrigin[0] + p_rectWidth)) 
-		&& (p_point[1] >= p_rectOrigin[1]) && (p_point[1] <= (p_rectOrigin[1] + p_rectHeight)))  //nur < damit der Spieler nicht unten an Blöcken hängen bleibt!
+	if((p_point[0] >= rect.x) && (p_point[0] <= (rect.x + rect.w)) 
+		&& (p_point[1] >= rect.y) && (p_point[1] <= (rect.y + rect.h)))
 		return true;
 	else 
 		return false;

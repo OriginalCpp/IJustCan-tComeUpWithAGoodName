@@ -68,13 +68,13 @@ float* Player::detectCollision(GameObject* p_gameObject)
 	
 	for(int i = 0; i < 4; i++)
 	{
-		if(utils::collision_PointVsRect(playerPoints[i], objectPoints[0], objectW, objectH))
+		if(utils::collision_PointVsRect(playerPoints[i], p_gameObject->getDst()))
 		{
 			collisionPoint[0] = playerPoints[i][0];
 			collisionPoint[1] = playerPoints[i][1];
 			return(collisionPoint);
 		}
-		if(utils::collision_PointVsRect(objectPoints[i], playerPoints[0], w, h))
+		if(utils::collision_PointVsRect(objectPoints[i], dst))
 		{
 			collisionPoint[0] = objectPoints[i][0];
 			collisionPoint[1] = objectPoints[i][1];

@@ -27,7 +27,9 @@ void RenderWindow::render(GameObject* p_object)
 {
 	SDL_Texture* tex = NULL;
 	tex = p_object->getTexture();
-	SDL_RenderCopy(renderer, tex, p_object->getSrc(), p_object->getDst());
+	SDL_Rect src = p_object->getSrc();
+	SDL_Rect dst = p_object->getDst();
+	SDL_RenderCopy(renderer, tex, &src, &dst);
 }
 
 void RenderWindow::display() {
