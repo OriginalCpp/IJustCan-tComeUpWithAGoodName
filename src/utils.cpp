@@ -218,8 +218,8 @@ bool utils::resolveCollision(GameObject* p_dynamicGameObject, std::vector<std::v
 
 
 /**
- *  checks for each tile for adjancent tiles and then sets the texture(s) so that the tiles match
- *  TODO: remake the order of how the tiles are then selected because the tile with no adjancent tiles is the least common -> last thing to check
+ * @brief checks for each tile for adjancent tiles and then sets the texture(s) so that the tiles match
+ * 
  * @param p_tiles 
  */
 
@@ -275,38 +275,38 @@ void utils::selectTiles(std::vector<std::vector<Tile*>>& p_tiles)
 				left = true;
 
 
-			if(!top && !right && !below && !left)
-				p_tiles[i][j]->setSrc(utils::createRect(0, 0, constants::tileSprite::w, constants::tileSprite::h));
-			else if(!right && !below && !left)
-				p_tiles[i][j]->setSrc(utils::createRect(constants::tileSprite::w, 0, constants::tileSprite::w, constants::tileSprite::h));
-			else if(!top && !below && !left)
-				p_tiles[i][j]->setSrc(utils::createRect(constants::tileSprite::w*2, 0, constants::tileSprite::w, constants::tileSprite::h));
-			else if(!top && !right && !left)
-				p_tiles[i][j]->setSrc(utils::createRect(constants::tileSprite::w*3, 0, constants::tileSprite::w, constants::tileSprite::h));
-			else if(!top && !right && !below)
-				p_tiles[i][j]->setSrc(utils::createRect(0, constants::tileSprite::h, constants::tileSprite::w, constants::tileSprite::h));
-			else if(!below && !left)
-				p_tiles[i][j]->setSrc(utils::createRect(constants::tileSprite::w, constants::tileSprite::h, constants::tileSprite::w, constants::tileSprite::h));
-			else if(!right && !left)
-				p_tiles[i][j]->setSrc(utils::createRect(constants::tileSprite::w*2, constants::tileSprite::h, constants::tileSprite::w, constants::tileSprite::h));
-			else if(!right && !below)
-				p_tiles[i][j]->setSrc(utils::createRect(constants::tileSprite::w*3, constants::tileSprite::h, constants::tileSprite::w, constants::tileSprite::h));
-			else if(!top && !left)
-				p_tiles[i][j]->setSrc(utils::createRect(0, constants::tileSprite::h*2, constants::tileSprite::w, constants::tileSprite::h));
-			else if(!top && !below)
-				p_tiles[i][j]->setSrc(utils::createRect(constants::tileSprite::w, constants::tileSprite::h*2, constants::tileSprite::w, constants::tileSprite::h));
-			else if(!top && !right)
-				p_tiles[i][j]->setSrc(utils::createRect(constants::tileSprite::w*2, constants::tileSprite::h*2, constants::tileSprite::w, constants::tileSprite::h));
-			else if(!left)
-				p_tiles[i][j]->setSrc(utils::createRect(constants::tileSprite::w*3, constants::tileSprite::h*2, constants::tileSprite::w, constants::tileSprite::h));
-			else if(!below)
-				p_tiles[i][j]->setSrc(utils::createRect(0, constants::tileSprite::h*3, constants::tileSprite::w, constants::tileSprite::h));
-			else if(!top)
-				p_tiles[i][j]->setSrc(utils::createRect(constants::tileSprite::w, constants::tileSprite::h*3, constants::tileSprite::w, constants::tileSprite::h));
-			else if(!right)
-				p_tiles[i][j]->setSrc(utils::createRect(constants::tileSprite::w*2, constants::tileSprite::h*3, constants::tileSprite::w, constants::tileSprite::h));
-			else
+			if(top && right && below && left)
 				p_tiles[i][j]->setSrc(utils::createRect(constants::tileSprite::w*3, constants::tileSprite::h*3, constants::tileSprite::w, constants::tileSprite::h));
+			else if(top && below && left)
+				p_tiles[i][j]->setSrc(utils::createRect(constants::tileSprite::w*2, constants::tileSprite::h*3, constants::tileSprite::w, constants::tileSprite::h));
+			else if(right && below && left)
+				p_tiles[i][j]->setSrc(utils::createRect(constants::tileSprite::w, constants::tileSprite::h*3, constants::tileSprite::w, constants::tileSprite::h));
+			else if(top && right && left)
+				p_tiles[i][j]->setSrc(utils::createRect(0, constants::tileSprite::h*3, constants::tileSprite::w, constants::tileSprite::h));
+			else if(top && right && below)
+				p_tiles[i][j]->setSrc(utils::createRect(constants::tileSprite::w*3, constants::tileSprite::h*2, constants::tileSprite::w, constants::tileSprite::h));
+			else if(below && left)
+				p_tiles[i][j]->setSrc(utils::createRect(constants::tileSprite::w*2, constants::tileSprite::h*2, constants::tileSprite::w, constants::tileSprite::h));
+			else if(right && left)
+				p_tiles[i][j]->setSrc(utils::createRect(constants::tileSprite::w, constants::tileSprite::h*2, constants::tileSprite::w, constants::tileSprite::h));
+			else if(right && below)
+				p_tiles[i][j]->setSrc(utils::createRect(0, constants::tileSprite::h*2, constants::tileSprite::w, constants::tileSprite::h));
+			else if(top && left)
+				p_tiles[i][j]->setSrc(utils::createRect(constants::tileSprite::w*3, constants::tileSprite::h, constants::tileSprite::w, constants::tileSprite::h));
+			else if(top && below)
+				p_tiles[i][j]->setSrc(utils::createRect(constants::tileSprite::w*2, constants::tileSprite::h, constants::tileSprite::w, constants::tileSprite::h));
+			else if(top && right)
+				p_tiles[i][j]->setSrc(utils::createRect(constants::tileSprite::w, constants::tileSprite::h, constants::tileSprite::w, constants::tileSprite::h));
+			else if(left)
+				p_tiles[i][j]->setSrc(utils::createRect(0, constants::tileSprite::h, constants::tileSprite::w, constants::tileSprite::h));
+			else if(below)
+				p_tiles[i][j]->setSrc(utils::createRect(constants::tileSprite::w*3, 0, constants::tileSprite::w, constants::tileSprite::h));
+			else if(right)
+				p_tiles[i][j]->setSrc(utils::createRect(constants::tileSprite::w*2, 0, constants::tileSprite::w, constants::tileSprite::h));
+			else if(top)
+				p_tiles[i][j]->setSrc(utils::createRect(constants::tileSprite::w, 0, constants::tileSprite::w, constants::tileSprite::h));
+			else	
+				p_tiles[i][j]->setSrc(utils::createRect(0, 0, constants::tileSprite::w, constants::tileSprite::h));
 		}
 	}
 }
