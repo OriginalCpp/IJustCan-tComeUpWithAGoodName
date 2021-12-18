@@ -2,15 +2,16 @@
 #include "GameObject.hpp"
 #include <SDL.h>
 
-class RenderWindow {
+class RenderWindow 
+{
+	SDL_Window* window;
+	SDL_Renderer* renderer;
+
 public:
 	RenderWindow(const char* p_title, int p_w, int p_h);
-	void cleanup();
-	void clear();
 	SDL_Renderer* getRenderer();
 	void render(GameObject* p_object);
 	void display();
-private:
-	SDL_Window* window;
-	SDL_Renderer* renderer;
+	void clear();
+	void cleanup();
 };

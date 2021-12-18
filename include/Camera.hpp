@@ -1,13 +1,16 @@
 #pragma once
-#include "Player.hpp"
+#include "GameObject.hpp"
 #include <SDL.h>
 #include <vector>
 
 class Camera
 {
-    SDL_Rect margin{};
-    Player* playerToTrack;
+    SDL_FRect margin{};
+    GameObject* objectToTrack;
+    bool isTracking;
+
 public:
-    Camera(SDL_Rect p_margin, Player* p_player);
-    int* trackPlayer();
+    Camera(SDL_FRect p_margin, GameObject* p_object, bool p_isTracking = false);
+    void hasToTrack();
+    float* trackObject();
 };

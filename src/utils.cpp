@@ -7,6 +7,23 @@
 #include <iostream>
 #include <vector>
 
+//initializes all parts of SDL that we need
+
+int utils::init()
+{
+	if (SDL_Init(SDL_INIT_VIDEO) != 0) 
+	{
+		std::cout << "SDL_INIT_VIDEO has failed. Error:" << SDL_GetError() << std::endl;
+		return(1);
+	}
+	if (!(IMG_Init(IMG_INIT_PNG))) 
+	{
+		std::cout << "IMG_INIT_PNG has failed. Error:" << SDL_GetError() << std::endl;
+		return(1);
+	}	
+	return(0);
+}
+
 //creates a SDL_Rect with given dimensions
 
 SDL_Rect utils::createRect(int p_x, int p_y, int p_width, int p_height)
@@ -19,11 +36,39 @@ SDL_Rect utils::createRect(int p_x, int p_y, int p_width, int p_height)
 	return(rect);
 }
 
+SDL_FRect utils::createFRect(float p_x, float p_y, float p_width, float p_height)
+{
+	SDL_FRect frect;
+	frect.x = p_x;
+	frect.y = p_y;
+	frect.w = p_width;
+	frect.h = p_height;
+	return frect;
+}
 
 
-//checks for collision between a point and a rectangle (1 = collision detected; 0 = no collision)
+SDL_Texture* utils::loadTexture(const char* p_filePath, SDL_Renderer* p_renderer) 
+{
+	SDL_Texture* texture {NULL};
+	texture = IMG_LoadTexture(p_renderer, p_filePath);
+	if (texture == NULL)
+		std::cout << "Could not load Texture. Error: " << SDL_GetError() << std::endl;
+	else
+		std::cout << "Texture loaded: " << p_filePath << std::endl;
+	return(texture);
+}
 
-bool utils::collision_PointVsRect(float* p_point, SDL_Rect rect)
+
+/**
+ * @brief checks for a collision
+ * 
+ * @param p_point the point for the collision check
+ * @param rect the rect for the collision check
+ * @return true collision detected
+ * @return false no collision detected 
+ */
+
+bool utils::collision_PointVsRect(float* p_point, SDL_FRect rect)
 {
 	if((p_point[0] >= rect.x) && (p_point[0] <= (rect.x + rect.w)) 
 		&& (p_point[1] >= rect.y) && (p_point[1] <= (rect.y + rect.h)))
@@ -33,168 +78,165 @@ bool utils::collision_PointVsRect(float* p_point, SDL_Rect rect)
 }
 
 
+/**
+ * @brief checks from which direction the collision is happening and accordingly adjusts the position and the vector of the p_dynamicObject
+ * 
+ * !only works if a dynamicObject is colliding with a staticGameObject
+ * 
+ * @param p_dynamicGameObject dynamic object to change the position of
+ * @param p_collisionPoint    points which collides with the other object
+ * @param p_staticGameObject  static object to collide with
+ * @return true = player is on the floor
+ * @return false = player is not on the floor; or error
+ */
 
-//checks from which direction the collision is happening and accordingly adjusts the position and the vector of the p_dynamicObject
-//only works if a dynamicObject is colliding with a staticGameObject
-//true = player is on the floor, false = player is not on the floor
-
-bool utils::resolveCollision(Player* p_dynamicGameObject, float* p_collisionPoint, GameObject* p_staticGameObject)
+bool utils::resolveCollision(GameObject* p_dynamicGameObject, std::vector<std::vector<float>>* p_collisionPoint, GameObject* p_staticGameObject)
 {
+	if(!p_dynamicGameObject || !p_staticGameObject || !p_collisionPoint)
+	{
+		std::cout << "Error: Call to resolveCollision with nullptr\n";
+		return(false);
+	}
+
+	bool grounded {};
+
 	float dOX {p_dynamicGameObject->getX()};
 	float dOY {p_dynamicGameObject->getY()};
 	int dOW   {p_dynamicGameObject->getW()};
 	int dOH   {p_dynamicGameObject->getH()};
+
 	float sOX {p_staticGameObject->getX()};
 	float sOY {p_staticGameObject->getY()};
 	int sOW   {p_staticGameObject->getW()};
 	int sOH   {p_staticGameObject->getH()};
+
+	bool fromAbove{};
+	bool fromLeft{};
+	bool fromBelow{};
+	bool fromRight{};
+
 	float* pP {p_dynamicGameObject->getpP()};
-	if((p_collisionPoint[0] == dOX) && (p_collisionPoint[1] == dOY))
+
+	/* iterates through each collision point and checks the directions from which the dO is colliding with the sO */
+
+	for(int i = 0; i < static_cast<int>(p_collisionPoint->size()); ++i)
 	{
-		if(pP[1] >= sOY + sOH)
+		if(((*p_collisionPoint)[i][0] == dOX) && ((*p_collisionPoint)[i][1] == dOY))
 		{
-			p_dynamicGameObject->setVector((p_dynamicGameObject->getVector())[0], 0);
-			p_dynamicGameObject->setY(sOY + sOH + 0.01);
+			if(pP[1] >= sOY + sOH)
+				fromBelow = true;
+			else
+				fromRight = true;
+		}
+		else if(((*p_collisionPoint)[i][0] == dOX + dOW) && ((*p_collisionPoint)[i][1] == dOY))  
+		{
+			if(pP[1] >= sOY + sOH)
+				fromBelow = true;
+			else
+				fromLeft = true;
+		}
+		else if(((*p_collisionPoint)[i][0] == dOX) && ((*p_collisionPoint)[i][1] == dOY + dOH))
+		{
+			if((pP[1] + dOH) <= sOY)
+				fromAbove = true;
+			else
+				fromRight = true;
+		}
+		else if(((*p_collisionPoint)[i][0] == dOX + dOW) && ((*p_collisionPoint)[i][1] == dOY + dOH))
+		{
+			if((pP[1] + dOH) <= sOY)
+				fromAbove = true;
+			else
+				fromLeft = true;
+		}
+		else if(((*p_collisionPoint)[i][0] == sOX) && ((*p_collisionPoint)[i][1] == sOY))
+		{
+			if((pP[1] + dOH) <= sOY)
+				fromAbove = true;
+			else
+				fromLeft = true;
+		}
+		else if(((*p_collisionPoint)[i][0] == sOX + sOW) && (*p_collisionPoint)[i][1] == sOY)
+		{
+			if((pP[1] + dOH) <= sOY)
+				fromAbove = true;
+			else
+				fromRight = true;
+		}
+		else if(((*p_collisionPoint)[i][0] == sOX) && ((*p_collisionPoint)[i][1] == sOY + sOH))
+		{
+			if(pP[1] >= sOY + sOH)
+				fromBelow = true;
+			else
+				fromLeft = true;
+		}
+		else if(((*p_collisionPoint)[i][0] == sOX + sOW) && ((*p_collisionPoint)[i][1] == sOY + sOH))
+		{
+			if(pP[1] >= sOY + sOH)
+				fromBelow = true;
+			else
+				fromRight = true;
 		}
 		else
 		{
-			p_dynamicGameObject->setVector(0, (p_dynamicGameObject->getVector())[1]);
-			p_dynamicGameObject->setX(sOX + sOW);
+			std::cout << "Error: CollisionPoint: " << (*p_collisionPoint)[i][0] << ',' << (*p_collisionPoint)[i][1] << "is not a point of either object that is colliding...\n";
 		}
 	}
-	else if((p_collisionPoint[0] == dOX + dOW) && (p_collisionPoint[1] == dOY))  
+
+	/* changes the position of the dO based on the directions it is colliding with the sO */
+
+	if(fromAbove)
 	{
-		if(pP[1] >= sOY + sOH)
-		{
-			p_dynamicGameObject->setVector((p_dynamicGameObject->getVector())[0], 0);
-			p_dynamicGameObject->setY(sOY + sOH + 0.01);
-		}
-		else
-		{
-			p_dynamicGameObject->setVector(0, (p_dynamicGameObject->getVector())[1]);
-			p_dynamicGameObject->setX(sOX - dOW);
-		}
+		std::cout << "Collision from above\n";
+		p_dynamicGameObject->setVector((p_dynamicGameObject->getVector())[0], 0);
+		p_dynamicGameObject->setY(sOY - dOH);
+		grounded = true;
 	}
-	else if((p_collisionPoint[0] == dOX) && (p_collisionPoint[1] == dOY + dOH))
+	if(fromRight)
 	{
-		if((pP[1] + dOH) <= sOY)
-		{
-			p_dynamicGameObject->setVector((p_dynamicGameObject->getVector())[0], 0);
-			p_dynamicGameObject->setY(sOY - dOH);
-			return(true);
-		}
-		else
-		{
-			p_dynamicGameObject->setVector(0, (p_dynamicGameObject->getVector())[1]);
-			p_dynamicGameObject->setX(sOX + sOW);
-		}
+		std::cout << "Collision from right\n";
+		p_dynamicGameObject->setVector(0, (p_dynamicGameObject->getVector())[1]);
+		p_dynamicGameObject->setX(sOX + sOW + 0.01);
 	}
-	else if((p_collisionPoint[0] == dOX + dOW) && (p_collisionPoint[1] == dOY + dOH))
+	if(fromBelow)
 	{
-		if((pP[1] + dOH) <= sOY)
-		{
-			p_dynamicGameObject->setVector((p_dynamicGameObject->getVector())[0], 0);
-			p_dynamicGameObject->setY(sOY - dOH);
-			return(true);
-		}
-		else
-		{
-			p_dynamicGameObject->setVector(0, (p_dynamicGameObject->getVector())[1]);
-			p_dynamicGameObject->setX(sOX - dOW);
-		}
+		std::cout << "Collision from below\n";
+		p_dynamicGameObject->setVector((p_dynamicGameObject->getVector())[0], 0);
+		p_dynamicGameObject->setY(sOY + sOH + 0.01);
 	}
-	else if((p_collisionPoint[0] == sOX) && (p_collisionPoint[1] == sOY))
+	if(fromLeft)
 	{
-		if((pP[1] + dOH) <= sOY)
-		{
-			p_dynamicGameObject->setVector((p_dynamicGameObject->getVector())[0], 0);
-			p_dynamicGameObject->setY(sOY - dOH);
-			return(true);
-		}
-		else
-		{
-			p_dynamicGameObject->setVector(0, (p_dynamicGameObject->getVector())[1]);
-			p_dynamicGameObject->setX(sOX - dOW);
-		}
+		std::cout << "Collision from left\n";
+		p_dynamicGameObject->setVector(0, (p_dynamicGameObject->getVector())[1]);
+		p_dynamicGameObject->setX(sOX - dOW - 0.01);
 	}
-	else if((p_collisionPoint[0] == sOX + sOW) && p_collisionPoint[1] == sOY)
-	{
-		if((pP[1] + dOH) <= sOY)
-		{
-			p_dynamicGameObject->setVector((p_dynamicGameObject->getVector())[0], 0);
-			p_dynamicGameObject->setY(sOY - dOH);
-			return(true);
-		}
-		else
-		{
-			p_dynamicGameObject->setVector(0, (p_dynamicGameObject->getVector())[1]);
-			p_dynamicGameObject->setX(sOX + sOW);
-		}
-	}
-	else if((p_collisionPoint[0] == sOX) && (p_collisionPoint[1] == sOY + sOH))
-	{
-		if(pP[1] >= sOY + sOH)
-		{
-			p_dynamicGameObject->setVector((p_dynamicGameObject->getVector())[0], 0);
-			p_dynamicGameObject->setY(sOY + sOH + 0.01);
-		}
-		else
-		{
-			p_dynamicGameObject->setVector(0, (p_dynamicGameObject->getVector())[1]);
-			p_dynamicGameObject->setX(sOX - dOW);
-		}
-	}
-	else if((p_collisionPoint[0] == sOX + sOW) && (p_collisionPoint[1] == sOY + sOH))
-	{
-		if(pP[1] >= sOY + sOH)
-		{
-			p_dynamicGameObject->setVector((p_dynamicGameObject->getVector())[0], 0);
-			p_dynamicGameObject->setY(sOY + sOH + 0.01);
-		}
-		else
-		{
-			p_dynamicGameObject->setVector(0, (p_dynamicGameObject->getVector())[1]);
-			p_dynamicGameObject->setX(sOX + sOW);
-		}
-	}
-	return(false);
+
+	return(grounded);
 }
 
 
-SDL_Texture* utils::loadTexture(const char* p_filePath, SDL_Renderer* p_renderer) 
-{
-	SDL_Texture* texture = NULL;
-	texture = IMG_LoadTexture(p_renderer, p_filePath);
-	if (texture == NULL)
-		std::cout << "Could not load Texture. Error: " << SDL_GetError() << std::endl;
-	else
-		std::cout << "Texture loaded: " << p_filePath << std::endl;
-	return(texture);
-}
 
-//checks for each tile for adjancent tiles and then sets the texture(s) so that they match
+
+/**
+ *  checks for each tile for adjancent tiles and then sets the texture(s) so that the tiles match
+ *  TODO: remake the order of how the tiles are then selected because the tile with no adjancent tiles is the least common -> last thing to check
+ * @param p_tiles 
+ */
 
 void utils::selectTiles(std::vector<std::vector<Tile*>>& p_tiles)
 {
+	int outerSize {static_cast<int>(p_tiles.size())};
+	int innerSize {static_cast<int>(p_tiles[0].size())};
 
-	for(int i = 0; i < (static_cast<int>(p_tiles.size())); ++i)
+	for(int i = 0; i < outerSize; ++i)
 	{
-		for(int j = 0; j < (static_cast<int>(p_tiles[0].size())); ++j)
+		for(int j = 0; j < innerSize; ++j)
 		{
-			if(p_tiles[i][j] == NULL)
+			if(!p_tiles[i][j])
 			{
 				continue;
 			}
-
-			/*while(p_tiles[i][j] == NULL)
-			{
-				++j;
-				if(j == (static_cast<int>(p_tiles[0].size()) - 1))
-				{
-					++i;
-
-				}
-			}*/
+			
 			bool top {};
 			bool right {};
 			bool below{};
@@ -202,23 +244,23 @@ void utils::selectTiles(std::vector<std::vector<Tile*>>& p_tiles)
 
 			if (i > 0)
 			{
-				if(p_tiles[i - 1][j] != NULL)
+				if(p_tiles[i - 1][j])
 					top = true;
 			}
 			else
 				top = true;
 
-			if (j < (static_cast<int>(p_tiles[0].size()) - 1))
+			if (j < innerSize - 1)
 			{
-				if(p_tiles[i][j+1] != NULL)
+				if(p_tiles[i][j+1])
 				right = true;
 			}
 			else
 			 	right = true;
 	
-			if(i < (static_cast<int>(p_tiles.size()) - 1))
+			if(i < outerSize - 1)
 			{
-				if(p_tiles[i + 1][j] != NULL)
+				if(p_tiles[i + 1][j])
 				below = true;
 			}
 			else	
@@ -226,44 +268,45 @@ void utils::selectTiles(std::vector<std::vector<Tile*>>& p_tiles)
 
 			if(j > 0)
 			{
-				if(p_tiles[i][j - 1] != NULL)
+				if(p_tiles[i][j - 1])
 					left = true;
 			}
 			else 
 				left = true;
 
+
 			if(!top && !right && !below && !left)
-				p_tiles[i][j]->setSrc(utils::createRect(0, 0, 16, 16));
+				p_tiles[i][j]->setSrc(utils::createRect(0, 0, constants::tileSprite::w, constants::tileSprite::h));
 			else if(!right && !below && !left)
-				p_tiles[i][j]->setSrc(utils::createRect(16, 0, 16, 16));
+				p_tiles[i][j]->setSrc(utils::createRect(constants::tileSprite::w, 0, constants::tileSprite::w, constants::tileSprite::h));
 			else if(!top && !below && !left)
-				p_tiles[i][j]->setSrc(utils::createRect(16*2, 0, 16, 16));
+				p_tiles[i][j]->setSrc(utils::createRect(constants::tileSprite::w*2, 0, constants::tileSprite::w, constants::tileSprite::h));
 			else if(!top && !right && !left)
-				p_tiles[i][j]->setSrc(utils::createRect(16*3, 0, 16, 16));
+				p_tiles[i][j]->setSrc(utils::createRect(constants::tileSprite::w*3, 0, constants::tileSprite::w, constants::tileSprite::h));
 			else if(!top && !right && !below)
-				p_tiles[i][j]->setSrc(utils::createRect(0, 16, 16, 16));
+				p_tiles[i][j]->setSrc(utils::createRect(0, constants::tileSprite::h, constants::tileSprite::w, constants::tileSprite::h));
 			else if(!below && !left)
-				p_tiles[i][j]->setSrc(utils::createRect(16, 16, 16, 16));
+				p_tiles[i][j]->setSrc(utils::createRect(constants::tileSprite::w, constants::tileSprite::h, constants::tileSprite::w, constants::tileSprite::h));
 			else if(!right && !left)
-				p_tiles[i][j]->setSrc(utils::createRect(16*2, 16, 16, 16));
+				p_tiles[i][j]->setSrc(utils::createRect(constants::tileSprite::w*2, constants::tileSprite::h, constants::tileSprite::w, constants::tileSprite::h));
 			else if(!right && !below)
-				p_tiles[i][j]->setSrc(utils::createRect(16*3, 16, 16, 16));
+				p_tiles[i][j]->setSrc(utils::createRect(constants::tileSprite::w*3, constants::tileSprite::h, constants::tileSprite::w, constants::tileSprite::h));
 			else if(!top && !left)
-				p_tiles[i][j]->setSrc(utils::createRect(0, 32, 16, 16));
+				p_tiles[i][j]->setSrc(utils::createRect(0, constants::tileSprite::h*2, constants::tileSprite::w, constants::tileSprite::h));
 			else if(!top && !below)
-				p_tiles[i][j]->setSrc(utils::createRect(16, 32, 16, 16));
+				p_tiles[i][j]->setSrc(utils::createRect(constants::tileSprite::w, constants::tileSprite::h*2, constants::tileSprite::w, constants::tileSprite::h));
 			else if(!top && !right)
-				p_tiles[i][j]->setSrc(utils::createRect(16*2, 32, 16, 16));
+				p_tiles[i][j]->setSrc(utils::createRect(constants::tileSprite::w*2, constants::tileSprite::h*2, constants::tileSprite::w, constants::tileSprite::h));
 			else if(!left)
-				p_tiles[i][j]->setSrc(utils::createRect(16*3, 32, 16, 16));
+				p_tiles[i][j]->setSrc(utils::createRect(constants::tileSprite::w*3, constants::tileSprite::h*2, constants::tileSprite::w, constants::tileSprite::h));
 			else if(!below)
-				p_tiles[i][j]->setSrc(utils::createRect(0, 48, 16, 16));
+				p_tiles[i][j]->setSrc(utils::createRect(0, constants::tileSprite::h*3, constants::tileSprite::w, constants::tileSprite::h));
 			else if(!top)
-				p_tiles[i][j]->setSrc(utils::createRect(16, 48, 16, 16));
+				p_tiles[i][j]->setSrc(utils::createRect(constants::tileSprite::w, constants::tileSprite::h*3, constants::tileSprite::w, constants::tileSprite::h));
 			else if(!right)
-				p_tiles[i][j]->setSrc(utils::createRect(16*2, 48, 16, 16));
+				p_tiles[i][j]->setSrc(utils::createRect(constants::tileSprite::w*2, constants::tileSprite::h*3, constants::tileSprite::w, constants::tileSprite::h));
 			else
-				p_tiles[i][j]->setSrc(utils::createRect(16*3, 48, 16, 16));
+				p_tiles[i][j]->setSrc(utils::createRect(constants::tileSprite::w*3, constants::tileSprite::h*3, constants::tileSprite::w, constants::tileSprite::h));
 		}
 	}
 }

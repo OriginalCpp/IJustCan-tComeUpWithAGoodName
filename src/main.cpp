@@ -1,9 +1,9 @@
 #include "RenderWindow.hpp"
+#include "utils.hpp"
 #include "GameObject.hpp"
 #include "Player.hpp"
 #include "Tiles.hpp"
 #include "Camera.hpp"
-#include "utils.hpp"
 #include "Levels.hpp"
 #include "Globals.hpp"
 #include <SDL.h>
@@ -12,55 +12,66 @@
 #include <vector>
 
 
-int init()
-{
-	if (SDL_Init(SDL_INIT_VIDEO) != 0) {
-		std::cout << "SDL_INIT_VIDEO has failed. Error:" << SDL_GetError() << std::endl;
-		return(1);
-	}
-	if (!(IMG_Init(IMG_INIT_PNG))) {
-		std::cout << "IMG_INIT_PNG has failed. Error:" << SDL_GetError() << std::endl;
-		return(1);
-	}	
-	return(0);
-}
-
+/**
+ * @brief initialization + game loop 
+ * 
+ * !@bug sometimes half of the tiles in Level 1 "despawn" suddenly -> cause is definetely the camera
+ * 
+ * !@bug if you hold right/left for quite some time you cant jump sometimes
+ * 
+ * ? class for vectors in objects so that you can overload the operators for vector arithmetics ?
+ * 
+ * TODO: test if you can remove the + 0.01 in resolveCollision without sticking to ceilings
+ * TODO: refactor big portions of code in the GameLoop
+ * TODO: draw better tileSet sprites, make PlayerAnimations, an enemy, and make a background
+ * TODO: delete all objects in tiles after a level is completed/game exits to prevent memory leak
+ */
 
 int main(int argc, char* argv[])
 {
-	if (init())
+	bool gameRunning {true};
+
+	if (utils::init())
+	{
 		std::cout << "Initialization failed" << std::endl;
+		gameRunning = false;
+	}	
 	else
 		std::cout << "Initialization complete" << std::endl;
 	
-	RenderWindow window("JumpyMagician", 1920, 1280);
-
-	bool gameRunning {true};
+	RenderWindow window("JumpyMagician", constants::window::w, constants::window::h);
 
 	int level {1};
 
-	Player player(utils::loadTexture("../res/player/maincharacter.png", window.getRenderer()), utils::createRect(0,0,16, 23), utils::createRect(200, 11*64, 16*constants::scale, 23*constants::scale));
-	Camera camera(utils::createRect(player.getX() - 64, player.getY() - 64, 128, 128), &player);
+	Player player(utils::loadTexture("../res/player/maincharacter.png", window.getRenderer()), utils::createRect(0, 0, constants::playerSprite::w, constants::playerSprite::h)
+				  , utils::createRect(100, 100, constants::playerSprite::w*constants::scale, constants::playerSprite::h*constants::scale));
 
-	std::vector<std::vector<Tile*>> tiles;
-	if (levels::setUpLevel(level, player, tiles, window.getRenderer()) > 0)
+	Camera camera(utils::createFRect((constants::window::w/2) - (constants::camera::w/2), 10*constants::scale*constants::tileSprite::h - constants::camera::h
+				  , constants::camera::w, constants::camera::h), &player);
+
+	std::vector<std::vector<Tile*>>* tiles = levels::setUpLevel(level, window.getRenderer());
+
+	if (!tiles)
 	{
-		std::cout << "Error: levels::setUpLevel() failed\n";
+		std::cout << "Error: levels::setUpLevel() failed\n Could not load level " << level << "\n";
 		gameRunning = false;
 	}
+	else
+		std::cout << "Level " << level << " was loaded succesfully!\n";
+
 
 	SDL_Event event;
 	float dt {};
-	float* collisionPointPtr {NULL};
-	int player_speed {400};
+	std::vector<std::vector<float>>* collisionPoints {nullptr};
+	int playerSpeed {400};
 	int amountOfJumps {constants::maxAmountOfJumps};
 	bool grounded {};
-	int* offsetToApply {};
-	int gravity {3500};
+	float* offsetToApply {nullptr};
 	float currentFrameTime{static_cast<float>(SDL_GetTicks())/1000};
 	float previousFrameTime{};
 
-	while (gameRunning) {
+	while (gameRunning) 
+	{
 		previousFrameTime = currentFrameTime;
 		currentFrameTime = static_cast<float>(SDL_GetTicks())/1000;
 		dt = currentFrameTime - previousFrameTime; 
@@ -103,27 +114,29 @@ int main(int argc, char* argv[])
 					}
 			}
 		}
-		player.move(dt, player_speed, gravity);
+
+		player.move(dt, playerSpeed);
+
 		grounded = false;
-		for(int i = 0; i < (static_cast<int>(tiles.size())); i++)
+		
+		for(int i = 0; i < static_cast<int>(tiles->size()); i++)
 		{
-			for(int j = 0; j < (static_cast<int>(tiles[0].size())); ++j)
+			for(int j = 0; j < static_cast<int>((*tiles)[0].size()); ++j)
 			{
-				collisionPointPtr = player.detectCollision(tiles[i][j]);
-				if(collisionPointPtr != NULL)
+				collisionPoints = player.detectCollision((*tiles)[i][j]);
+				if(collisionPoints)
 				{
-					if (utils::resolveCollision(&player, collisionPointPtr, tiles[i][j]))
-					{
+					if (utils::resolveCollision(&player, collisionPoints, (*tiles)[i][j]))
+				 	{
 						amountOfJumps = constants::maxAmountOfJumps;
-						grounded = true;
-					}
-					delete collisionPointPtr;
+			 			grounded = true;
+			 		}
+					delete collisionPoints;
+					collisionPoints = nullptr;
 				}
-				collisionPointPtr = NULL;
 			}
-			
-			
 		}
+
 		if(!grounded)
 		{
 			if(amountOfJumps == constants::maxAmountOfJumps)
@@ -131,47 +144,48 @@ int main(int argc, char* argv[])
 				--amountOfJumps;
 			}
 		}
-		offsetToApply = camera.trackPlayer();
-		if(offsetToApply != NULL)
+
+		camera.hasToTrack();
+		offsetToApply = camera.trackObject();
+		if(offsetToApply)
 		{
-			for(int i = 0; i < static_cast<int>(tiles.size()); ++i)
+			for(int i = 0; i < static_cast<int>(tiles->size()); ++i)
 			{
-				for(int j = 0; j < static_cast<int>(tiles[0].size()); ++j)
+				for(int j = 0; j < static_cast<int>((*tiles)[0].size()); ++j)
 				{
-					if (tiles[i][j] != NULL)
+					if ((*tiles)[i][j])
 					{
-						tiles[i][j]->setX(tiles[i][j]->getX() + offsetToApply[0]);
-						tiles[i][j]->setY(tiles[i][j]->getY() + offsetToApply[1]);
+						(*tiles)[i][j]->setX((*tiles)[i][j]->getX() + offsetToApply[0]);
+						(*tiles)[i][j]->setY((*tiles)[i][j]->getY() + offsetToApply[1]);
 					}
 				}
 			}
 			player.setX(player.getX() + offsetToApply[0]);
 			player.setY(player.getY() + offsetToApply[1]);
-			offsetToApply = NULL;
+			delete offsetToApply;
+			offsetToApply = nullptr;
 		}
+
 		window.clear();
-		for (int i = 0; i < (static_cast<int>(tiles.size())); ++i) 
+
+		for (int i = 0; i < (static_cast<int>(tiles->size())); ++i) 
 		{
-			for(int j = 0; j < static_cast<int>(tiles[0].size()); ++j)
+			for(int j = 0; j < static_cast<int>((*tiles)[0].size()); ++j)
 			{
-				if(tiles[i][j] != NULL)
+				if((*tiles)[i][j])
 				{
-					window.render(tiles[i][j]);
+					window.render((*tiles)[i][j]);
 				}
 			}
 			
 		}
 		window.render(&player);
+
 		window.display();
 	}
 
 	window.cleanup();
 	SDL_Quit();
-	
-	/*for(int i = 0; i < (static_cast<int>(objects.size())); ++i)
-	{
-		delete objects[i];
-	}*/
 
 	return(0);
 }

@@ -7,6 +7,6 @@
 
 namespace levels
 {
-    bool setUpLevel(int p_level, Player& p_player, std::vector<std::vector<Tile*>>& p_tiles, SDL_Renderer* p_renderer);
-    bool setUpLevel1(Player& p_player, std::vector<std::vector<Tile*>>& p_tiles, SDL_Renderer* p_renderer);
+    std::vector<std::vector<Tile*>>* setUpLevel(int p_level, SDL_Renderer* p_renderer);
+    std::vector<std::vector<Tile*>>* setUpLevel1(SDL_Renderer* p_renderer);
 }
