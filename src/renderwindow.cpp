@@ -3,15 +3,19 @@
 #include <SDL.h>
 #include <iostream>
 
+RenderWindow::RenderWindow()
+{}
+
+
 RenderWindow::RenderWindow(const char* p_title, int p_w, int p_h)
-	:window(NULL), renderer(NULL)
+	:window(nullptr), renderer(nullptr)
 {
 	window = SDL_CreateWindow(p_title, SDL_WINDOWPOS_UNDEFINED, SDL_WINDOWPOS_UNDEFINED, p_w, p_h, SDL_WINDOW_SHOWN); //|| SDL_WINDOW_FULLSCREEN);
-	if (window == NULL)
+	if (!window)
 		std::cout << "Window failed to initialize. Error: " << SDL_GetError() << std::endl;
 	
 	renderer = SDL_CreateRenderer(window, -1, SDL_RENDERER_ACCELERATED);
-	if (renderer == NULL)
+	if (!renderer)
 		std::cout << "Renderer failed to initialize. Error: " << SDL_GetError() << std::endl;
 }
 
@@ -24,11 +28,15 @@ SDL_Renderer* RenderWindow::getRenderer()
 
 void RenderWindow::render(GameObject* p_object) 
 {
-	SDL_Texture* tex {NULL};
+	SDL_Texture* tex {nullptr};
 	tex = p_object->getTexture();
 	SDL_Rect src = p_object->getSrc();
 	SDL_Rect dst = p_object->getDst();
-	SDL_RenderCopy(renderer, tex, &src, &dst);
+	SDL_RendererFlip flip = p_object->getFlip();
+	if(flip == SDL_FLIP_NONE)
+		SDL_RenderCopy(renderer, tex, &src, &dst);
+	else
+		SDL_RenderCopyEx(renderer, tex, &src, &dst, 0, nullptr, flip);
 }
 
 

@@ -14,7 +14,7 @@ enum class TileType
 class Tile :public GameObject
 {
     bool collidable {};
-    TileType type{};
+    TileType tileType{};
 public:
     Tile(SDL_Texture* p_texture, SDL_Rect p_src, SDL_Rect p_dst, TileType p_type = TileType::grass, bool p_collidable = true);
 };

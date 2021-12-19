@@ -4,7 +4,7 @@ namespace constants
 {
     constexpr int maxAmountOfJumps {1};
     constexpr int scale {4};
-    constexpr int gravity{3500};
+    constexpr int gravity{3250};
 
     namespace playerSprite
     {

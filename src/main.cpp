@@ -2,6 +2,7 @@
 #include "utils.hpp"
 #include "GameObject.hpp"
 #include "Player.hpp"
+#include "Slime.hpp"
 #include "Tiles.hpp"
 #include "Camera.hpp"
 #include "Levels.hpp"
@@ -15,11 +16,9 @@
 /**
  * @brief initialization + game loop 
  * 
- * !@bug sometimes half of the tiles in Level 1 "despawn" suddenly -> cause is definetely the camera
- * 
- * !@bug if you hold right/left for quite some time you cant jump sometimes
- * 
  * ? class for vectors in objects so that you can overload the operators for vector arithmetics ?
+ * 
+ * !@bug collision: if standing next to a two tiles tall tile thats not on the ground and pressing a direction you cannot jump
  * 
  * TODO: test if you can remove the + 0.01 in resolveCollision without sticking to ceilings
  * TODO: refactor big portions of code in the GameLoop
@@ -29,32 +28,38 @@
 
 int main(int argc, char* argv[])
 {
-	bool gameRunning {true};
 
-	if (utils::init())
+	if (utils::initSDL())
 	{
 		std::cout << "Initialization failed" << std::endl;
-		gameRunning = false;
+		return(1);
 	}	
 	else
 		std::cout << "Initialization complete" << std::endl;
 	
-	RenderWindow window("JumpyMagician", constants::window::w, constants::window::h);
 
+
+	bool gameRunning {true};
 	int level {1};
 
-	Player player(utils::loadTexture("../res/player/maincharacter.png", window.getRenderer()), utils::createRect(0, 0, constants::playerSprite::w, constants::playerSprite::h)
+	RenderWindow window("JumpyMagician", constants::window::w, constants::window::h);
+
+	
+
+	Player player(utils::loadTexture("../res/player/MCSpriteSheet.png", window.getRenderer()), utils::createRect(0, 0, constants::playerSprite::w, constants::playerSprite::h)
 				  , utils::createRect(100, 100, constants::playerSprite::w*constants::scale, constants::playerSprite::h*constants::scale));
 
 	Camera camera(utils::createFRect((constants::window::w/2) - (constants::camera::w/2), 10*constants::scale*constants::tileSprite::h - constants::camera::h
 				  , constants::camera::w, constants::camera::h), &player);
+
+	Slime larry(utils::loadTexture("../res/enemies/greenslime.png", window.getRenderer()), utils::createRect(0, 0, 16, 16), utils::createRect(1100, 600, 64, 64));
 
 	std::vector<std::vector<Tile*>>* tiles = levels::setUpLevel(level, window.getRenderer());
 
 	if (!tiles)
 	{
 		std::cout << "Error: levels::setUpLevel() failed\n Could not load level " << level << "\n";
-		gameRunning = false;
+		return(1);
 	}
 	else
 		std::cout << "Level " << level << " was loaded succesfully!\n";
@@ -87,9 +92,11 @@ int main(int argc, char* argv[])
 					{
 						case(SDLK_a):
 							player.setGoalX(-1);
+							player.setSrc(utils::createRect(0, constants::playerSprite::h, constants::playerSprite::w, constants::playerSprite::h));
 							break;
 						case(SDLK_d):
 							player.setGoalX(1);
+							player.setSrc(utils::createRect(0, 0, constants::playerSprite::w, constants::playerSprite::h));
 							break;
 						case(SDLK_SPACE):
 							if(amountOfJumps > 0)
@@ -116,6 +123,7 @@ int main(int argc, char* argv[])
 		}
 
 		player.move(dt, playerSpeed);
+		larry.move(dt);
 
 		grounded = false;
 		
@@ -131,6 +139,13 @@ int main(int argc, char* argv[])
 						amountOfJumps = constants::maxAmountOfJumps;
 			 			grounded = true;
 			 		}
+					delete collisionPoints;
+					collisionPoints = nullptr;
+				}
+				collisionPoints = larry.detectCollision((*tiles)[i][j]);
+				if(collisionPoints)
+				{
+					utils::resolveCollision(&larry, collisionPoints, (*tiles)[i][j]);
 					delete collisionPoints;
 					collisionPoints = nullptr;
 				}
@@ -160,6 +175,8 @@ int main(int argc, char* argv[])
 					}
 				}
 			}
+			larry.setX(larry.getX() + offsetToApply[0]);
+			larry.setY(larry.getY() + offsetToApply[1]);
 			player.setX(player.getX() + offsetToApply[0]);
 			player.setY(player.getY() + offsetToApply[1]);
 			delete offsetToApply;
@@ -179,6 +196,7 @@ int main(int argc, char* argv[])
 			}
 			
 		}
+		window.render(&larry);
 		window.render(&player);
 
 		window.display();

@@ -18,7 +18,7 @@ std::vector<std::vector<Tile*>>* levels::setUpLevel(int p_level, SDL_Renderer* p
             break;
 		default:
 			std::cout << "Error: Level does not exist: Level " << p_level << "\n";
-            return(NULL);
+            return(nullptr);
 	}
 }
 
@@ -37,6 +37,19 @@ std::vector<std::vector<Tile*>>* levels::setUpLevel1(SDL_Renderer* p_renderer)
 	{
 		switch(i)
 		{
+			case 8:
+				for(int j = 13; j < 15; ++j)
+				{
+					(*tiles)[i][j] = new Tile(grassTexture, utils::createRect(0, 0, constants::tileSprite::w, constants::tileSprite::h)
+										  	  , utils::createRect(j*constants::scale*constants::tileSprite::w, i*constants::scale*constants::tileSprite::h
+										  	  , constants::tileSprite::w*constants::scale, constants::tileSprite::h*constants::scale));
+				}
+				break;	
+			case 9:
+				(*tiles)[i][10] = new Tile(grassTexture, utils::createRect(0, 0, constants::tileSprite::w, constants::tileSprite::h)
+										  	  , utils::createRect(10*constants::scale*constants::tileSprite::w, i*constants::scale*constants::tileSprite::h
+										  	  , constants::tileSprite::w*constants::scale, constants::tileSprite::h*constants::scale));
+				break;
 			case 10:
 				(*tiles)[i][7] = new Tile(grassTexture, utils::createRect(0, 0, constants::tileSprite::w, constants::tileSprite::h)
 										  	  , utils::createRect(7*constants::scale*constants::tileSprite::w, i*constants::scale*constants::tileSprite::h

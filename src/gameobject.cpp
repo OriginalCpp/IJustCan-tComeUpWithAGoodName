@@ -74,6 +74,21 @@ void GameObject::setY(float p_y)
 	dst.y = p_y;
 }
 
+SDL_RendererFlip GameObject::getFlip()
+{
+	return flipFlag;
+}
+
+void GameObject::setFlip(SDL_RendererFlip p_flip)
+{
+	flipFlag = p_flip;
+}
+
+ObjectType GameObject::getObjectType()
+{
+	return objectType;
+}
+
 float* GameObject::getVector() {
 	return(vector);
 }
@@ -106,8 +121,6 @@ float* GameObject::getpP()
 
 /**
  * @brief checks wether this object is colliding with another GameObject or not
- * 
- * !@bug one can bug himself approx. 1 pixel from the right into a block when holding a
  * 
  * ? does it make a difference if I make all the points or just take the dst rect points
  * 

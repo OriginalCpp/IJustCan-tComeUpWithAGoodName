@@ -1,17 +1,20 @@
 #include "utils.hpp"
+#include "RenderWindow.hpp"
 #include "GameObject.hpp"
 #include "Player.hpp"
+#include "Tiles.hpp"
+#include "Camera.hpp"
 #include "Globals.hpp"
 #include <SDL.h>
 #include <SDL_image.h>
 #include <iostream>
 #include <vector>
 
-//initializes all parts of SDL that we need
+//initializes all parts of SDL
 
-int utils::init()
+int utils::initSDL()
 {
-	if (SDL_Init(SDL_INIT_VIDEO) != 0) 
+	if (SDL_Init(SDL_INIT_VIDEO)) 
 	{
 		std::cout << "SDL_INIT_VIDEO has failed. Error:" << SDL_GetError() << std::endl;
 		return(1);
@@ -19,10 +22,11 @@ int utils::init()
 	if (!(IMG_Init(IMG_INIT_PNG))) 
 	{
 		std::cout << "IMG_INIT_PNG has failed. Error:" << SDL_GetError() << std::endl;
-		return(1);
+		return(2);
 	}	
 	return(0);
 }
+
 
 //creates a SDL_Rect with given dimensions
 
@@ -49,9 +53,9 @@ SDL_FRect utils::createFRect(float p_x, float p_y, float p_width, float p_height
 
 SDL_Texture* utils::loadTexture(const char* p_filePath, SDL_Renderer* p_renderer) 
 {
-	SDL_Texture* texture {NULL};
+	SDL_Texture* texture {nullptr};
 	texture = IMG_LoadTexture(p_renderer, p_filePath);
-	if (texture == NULL)
+	if (!texture)
 		std::cout << "Could not load Texture. Error: " << SDL_GetError() << std::endl;
 	else
 		std::cout << "Texture loaded: " << p_filePath << std::endl;
@@ -187,28 +191,44 @@ bool utils::resolveCollision(GameObject* p_dynamicGameObject, std::vector<std::v
 
 	if(fromAbove)
 	{
-		std::cout << "Collision from above\n";
+		//std::cout << "Collision from above\n";
 		p_dynamicGameObject->setVector((p_dynamicGameObject->getVector())[0], 0);
 		p_dynamicGameObject->setY(sOY - dOH);
 		grounded = true;
 	}
 	if(fromRight)
 	{
-		std::cout << "Collision from right\n";
-		p_dynamicGameObject->setVector(0, (p_dynamicGameObject->getVector())[1]);
-		p_dynamicGameObject->setX(sOX + sOW + 0.01);
+		//std::cout << "Collision from right\n";
+		if(p_dynamicGameObject->getObjectType() == ObjectType::slime)
+		{
+			p_dynamicGameObject->setVector(-1 * (p_dynamicGameObject->getVector())[0], (p_dynamicGameObject->getVector())[1]);
+			p_dynamicGameObject->setX(sOX + sOW + 0.01);
+		}
+		else
+		{
+			p_dynamicGameObject->setVector(0, (p_dynamicGameObject->getVector())[1]);
+			p_dynamicGameObject->setX(sOX + sOW + 0.01);
+		}
 	}
 	if(fromBelow)
 	{
-		std::cout << "Collision from below\n";
+		//std::cout << "Collision from below\n";
 		p_dynamicGameObject->setVector((p_dynamicGameObject->getVector())[0], 0);
 		p_dynamicGameObject->setY(sOY + sOH + 0.01);
 	}
 	if(fromLeft)
 	{
-		std::cout << "Collision from left\n";
-		p_dynamicGameObject->setVector(0, (p_dynamicGameObject->getVector())[1]);
-		p_dynamicGameObject->setX(sOX - dOW - 0.01);
+		//std::cout << "Collision from left\n";
+		if(p_dynamicGameObject->getObjectType() == ObjectType::slime)
+		{
+			p_dynamicGameObject->setVector(-1 * (p_dynamicGameObject->getVector())[0], (p_dynamicGameObject->getVector())[1]);
+			p_dynamicGameObject->setX(sOX - dOW - 0.01);
+		}
+		else
+		{
+			p_dynamicGameObject->setVector(0, (p_dynamicGameObject->getVector())[1]);
+			p_dynamicGameObject->setX(sOX - dOW - 0.01);
+		}
 	}
 
 	return(grounded);

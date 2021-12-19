@@ -25,9 +25,6 @@ void Camera::hasToTrack()
 /**
  * @brief returns the offset that has to be made to center the player again
  * 
- * !@bug doesn't track the Y position right, maybe error lies within the implementation of this in main(); map always goes further down after jumping off a small cliff and when 
- * !     ^the player falls off completely the camera doesnt care...
- * 
  * TODO: make the cam go smooth not so abrupt especially when moving in Y direction
  * 
  * @return int* returns the offset (X,Y) 

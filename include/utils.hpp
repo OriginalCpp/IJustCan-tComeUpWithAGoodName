@@ -1,13 +1,15 @@
 #pragma once
+#include "RenderWindow.hpp"
 #include "GameObject.hpp"
 #include "Player.hpp"
 #include "Tiles.hpp"
+#include "Camera.hpp"
 #include <SDL.h>
 #include <vector>
 
 
 namespace utils {
-	int init();
+	int initSDL();
 	SDL_Rect createRect(int p_x, int p_y, int p_width, int p_height);
 	SDL_FRect createFRect(float p_x, float p_y, float p_width, float p_height);
 	SDL_Texture* loadTexture(const char* p_filePath, SDL_Renderer* p_renderer);

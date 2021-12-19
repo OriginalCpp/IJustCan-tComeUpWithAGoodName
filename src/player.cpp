@@ -8,7 +8,7 @@
 Player::Player(SDL_Texture* p_tex, SDL_Rect p_src, SDL_Rect p_dst)
 	:GameObject{p_tex, p_src, p_dst}
 {
-
+	objectType = ObjectType::player;
 }
 
 void Player::setGoalX(int goal)
