@@ -1,19 +1,25 @@
+#define SDL_MAIN_HANDLED
 #include "utils.hpp"
 #include "RenderWindow.hpp"
 #include "GameObject.hpp"
 #include "Player.hpp"
 #include "Tiles.hpp"
 #include "Camera.hpp"
-#include "Globals.hpp"
+#include "constants.hpp"
 #include <SDL.h>
 #include <SDL_image.h>
 #include <iostream>
 #include <vector>
 
-//initializes all parts of SDL
-
+/**
+ * @brief Initializes SDL's video subsystem and the PNG library of SDL_image
+ * 
+ * @return 0 on succes; 1 if the init. of the video subsystem failed; 2 if the init of the PNG library of SDL_image failed
+ */
 int utils::initSDL()
 {
+	SDL_SetMainReady();
+	
 	if (SDL_Init(SDL_INIT_VIDEO)) 
 	{
 		std::cout << "SDL_INIT_VIDEO has failed. Error:" << SDL_GetError() << std::endl;
@@ -64,45 +70,36 @@ SDL_Texture* utils::loadTexture(const char* p_filePath, SDL_Renderer* p_renderer
 
 
 /**
- * @brief checks for a collision
- * 
- * @param p_point the point for the collision check
- * @param rect the rect for the collision check
- * @return true collision detected
- * @return false no collision detected 
+ * @sa utils.hpp
+ * @sa Test::utils_collision_PointVsRect()
  */
 
-bool utils::collision_PointVsRect(float* p_point, SDL_FRect rect)
+bool utils::collision_PointVsRect(SDL_FPoint* point, SDL_FRect* rect)
 {
-	if((p_point[0] >= rect.x) && (p_point[0] <= (rect.x + rect.w)) 
-		&& (p_point[1] >= rect.y) && (p_point[1] <= (rect.y + rect.h)))
-		return true;
-	else 
-		return false;
+	return(	((point->x > rect->x) && (point->x < (rect->x + rect->w)) 
+			&& (point->y > rect->y) && (point->y < (rect->y + rect->h))) ? true : false	);
 }
 
 
 /**
- * @brief checks from which direction the collision is happening and accordingly adjusts the position and the vector of the p_dynamicObject
+ * @brief Checks from which direction the collision of two GameObjects is happening and accordingly adjusts the position and the vector of the p_dynamicGameObject
  * 
- * !only works if a dynamicObject is colliding with a staticGameObject
+ * TODO: In mehrere Parts aufteilen damit mehrere Teile des Programms die Funktion besser nutzen können (der Slime z.B.)
  * 
- * @param p_dynamicGameObject dynamic object to change the position of
- * @param p_collisionPoint    points which collides with the other object
- * @param p_staticGameObject  static object to collide with
- * @return true = player is on the floor
- * @return false = player is not on the floor; or error
+ * @param p_dynamicGameObject GameObject which collides with p_staticGameObject
+ * @param p_collisionPoint    Outer Points of the collision rectangle of both GameObjects that that intersect with the collision rectangle of the other GameObject
+ * @param p_staticGameObject  GameObject that the p_dynamicGameObject collides with
+ * @return Returns a bool. True if the p_dynamicGameObject is on the floor/ground or false if it is not.
  */
-
-bool utils::resolveCollision(GameObject* p_dynamicGameObject, std::vector<std::vector<float>>* p_collisionPoint, GameObject* p_staticGameObject)
+bool utils::resolveCollision(GameObject* p_dynamicGameObject, std::vector<SDL_FPoint>* p_collisionPoints, GameObject* p_staticGameObject)
 {
-	if(!p_dynamicGameObject || !p_staticGameObject || !p_collisionPoint)
+	if(!p_dynamicGameObject || !p_staticGameObject || !p_collisionPoints)
 	{
 		std::cout << "Error: Call to resolveCollision with nullptr\n";
 		return(false);
 	}
 
-	bool grounded {};
+	bool grounded {false};
 
 	float dOX {p_dynamicGameObject->getX()};
 	float dOY {p_dynamicGameObject->getY()};
@@ -123,58 +120,58 @@ bool utils::resolveCollision(GameObject* p_dynamicGameObject, std::vector<std::v
 
 	/* iterates through each collision point and checks the directions from which the dO is colliding with the sO */
 
-	for(int i = 0; i < static_cast<int>(p_collisionPoint->size()); ++i)
+	for(int i = 0; i < static_cast<int>(p_collisionPoints->size()); ++i)
 	{
-		if(((*p_collisionPoint)[i][0] == dOX) && ((*p_collisionPoint)[i][1] == dOY))
+		if(((*p_collisionPoints)[i].x == dOX) && ((*p_collisionPoints)[i].y == dOY))
 		{
 			if(pP[1] >= sOY + sOH)
 				fromBelow = true;
 			else
 				fromRight = true;
 		}
-		else if(((*p_collisionPoint)[i][0] == dOX + dOW) && ((*p_collisionPoint)[i][1] == dOY))  
+		else if(((*p_collisionPoints)[i].x == dOX + dOW) && ((*p_collisionPoints)[i].y == dOY))  
 		{
 			if(pP[1] >= sOY + sOH)
 				fromBelow = true;
 			else
 				fromLeft = true;
 		}
-		else if(((*p_collisionPoint)[i][0] == dOX) && ((*p_collisionPoint)[i][1] == dOY + dOH))
+		else if(((*p_collisionPoints)[i].x == dOX) && ((*p_collisionPoints)[i].y == dOY + dOH))
 		{
 			if((pP[1] + dOH) <= sOY)
 				fromAbove = true;
 			else
 				fromRight = true;
 		}
-		else if(((*p_collisionPoint)[i][0] == dOX + dOW) && ((*p_collisionPoint)[i][1] == dOY + dOH))
+		else if(((*p_collisionPoints)[i].x == dOX + dOW) && ((*p_collisionPoints)[i].y == dOY + dOH))
 		{
 			if((pP[1] + dOH) <= sOY)
 				fromAbove = true;
 			else
 				fromLeft = true;
 		}
-		else if(((*p_collisionPoint)[i][0] == sOX) && ((*p_collisionPoint)[i][1] == sOY))
+		else if(((*p_collisionPoints)[i].x == sOX) && ((*p_collisionPoints)[i].y == sOY))
 		{
 			if((pP[1] + dOH) <= sOY)
 				fromAbove = true;
 			else
 				fromLeft = true;
 		}
-		else if(((*p_collisionPoint)[i][0] == sOX + sOW) && (*p_collisionPoint)[i][1] == sOY)
+		else if(((*p_collisionPoints)[i].x == sOX + sOW) && (*p_collisionPoints)[i].y == sOY)
 		{
 			if((pP[1] + dOH) <= sOY)
 				fromAbove = true;
 			else
 				fromRight = true;
 		}
-		else if(((*p_collisionPoint)[i][0] == sOX) && ((*p_collisionPoint)[i][1] == sOY + sOH))
+		else if(((*p_collisionPoints)[i].x == sOX) && ((*p_collisionPoints)[i].y == sOY + sOH))
 		{
 			if(pP[1] >= sOY + sOH)
 				fromBelow = true;
 			else
 				fromLeft = true;
 		}
-		else if(((*p_collisionPoint)[i][0] == sOX + sOW) && ((*p_collisionPoint)[i][1] == sOY + sOH))
+		else if(((*p_collisionPoints)[i].x == sOX + sOW) && ((*p_collisionPoints)[i].y == sOY + sOH))
 		{
 			if(pP[1] >= sOY + sOH)
 				fromBelow = true;
@@ -183,7 +180,7 @@ bool utils::resolveCollision(GameObject* p_dynamicGameObject, std::vector<std::v
 		}
 		else
 		{
-			std::cout << "Error: CollisionPoint: " << (*p_collisionPoint)[i][0] << ',' << (*p_collisionPoint)[i][1] << "is not a point of either object that is colliding...\n";
+			std::cout << "Error: CollisionPoint: " << (*p_collisionPoints)[i].x << ',' << (*p_collisionPoints)[i].y << "is not a point of either object that is colliding...\n";
 		}
 	}
 

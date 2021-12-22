@@ -1,7 +1,7 @@
 #include "Levels.hpp"
 #include "GameObject.hpp"
 #include "Player.hpp"
-#include "Globals.hpp"
+#include "Constants.hpp"
 #include "utils.hpp"
 #include <SDL.h>
 #include <iostream>
@@ -27,11 +27,13 @@ std::vector<std::vector<Tile*>>* levels::setUpLevel(int p_level, SDL_Renderer* p
 std::vector<std::vector<Tile*>>* levels::setUpLevel1(SDL_Renderer* p_renderer)
 {
 	int rows {constants::window::h/(constants::tileSprite::h*constants::scale)};
-	int columns {constants::window::w/(constants::tileSprite::w*constants::scale)};
+	int columns {2*(constants::window::w/(constants::tileSprite::w*constants::scale))};
 
 	std::vector<std::vector<Tile*>>* tiles = new std::vector<std::vector<Tile*>>(rows, std::vector<Tile*>(columns, NULL));
 
     SDL_Texture* grassTexture = utils::loadTexture("../res/tileset/sortedTileset.png", p_renderer);
+	SDL_Rect tileSrcRect {0, 0, constants::tileSprite::w, constants::tileSprite::h};
+
 
 	for (int i = 0; i < rows; ++i) 
 	{
@@ -40,25 +42,33 @@ std::vector<std::vector<Tile*>>* levels::setUpLevel1(SDL_Renderer* p_renderer)
 			case 8:
 				for(int j = 13; j < 15; ++j)
 				{
-					(*tiles)[i][j] = new Tile(grassTexture, utils::createRect(0, 0, constants::tileSprite::w, constants::tileSprite::h)
-										  	  , utils::createRect(j*constants::scale*constants::tileSprite::w, i*constants::scale*constants::tileSprite::h
+					tiles->at(i).at(j) = new Tile(grassTexture, tileSrcRect, utils::createRect(j*constants::scale*constants::tileSprite::w, i*constants::scale*constants::tileSprite::h
 										  	  , constants::tileSprite::w*constants::scale, constants::tileSprite::h*constants::scale));
 				}
 				break;	
 			case 9:
-				(*tiles)[i][10] = new Tile(grassTexture, utils::createRect(0, 0, constants::tileSprite::w, constants::tileSprite::h)
+				tiles->at(i).at(10) = new Tile(grassTexture, tileSrcRect
 										  	  , utils::createRect(10*constants::scale*constants::tileSprite::w, i*constants::scale*constants::tileSprite::h
 										  	  , constants::tileSprite::w*constants::scale, constants::tileSprite::h*constants::scale));
+				for(int j = 13; j < 15; ++j)
+				{
+					tiles->at(i).at(j) = new Tile(grassTexture, tileSrcRect
+										  	  , utils::createRect(j*constants::scale*constants::tileSprite::w, i*constants::scale*constants::tileSprite::h
+										  	  , constants::tileSprite::w*constants::scale, constants::tileSprite::h*constants::scale));
+				}
 				break;
 			case 10:
-				(*tiles)[i][7] = new Tile(grassTexture, utils::createRect(0, 0, constants::tileSprite::w, constants::tileSprite::h)
+				tiles->at(i).at(7) = new Tile(grassTexture, tileSrcRect
 										  	  , utils::createRect(7*constants::scale*constants::tileSprite::w, i*constants::scale*constants::tileSprite::h
+										  	  , constants::tileSprite::w*constants::scale, constants::tileSprite::h*constants::scale));
+				tiles->at(i).at(30) = new Tile(grassTexture, tileSrcRect
+										  	  , utils::createRect(30*constants::scale*constants::tileSprite::w, i*constants::scale*constants::tileSprite::h
 										  	  , constants::tileSprite::w*constants::scale, constants::tileSprite::h*constants::scale));
 				break;
 			case 11:
 				for (int j = 5; j < columns; ++j)
 				{
-					(*tiles)[i][j] = new Tile(grassTexture, utils::createRect(0, 0, constants::tileSprite::w, constants::tileSprite::h)
+					tiles->at(i).at(j) = new Tile(grassTexture, tileSrcRect
 										  	  , utils::createRect(j*constants::scale*constants::tileSprite::w, i*constants::scale*constants::tileSprite::h
 										  	  , constants::tileSprite::w*constants::scale, constants::tileSprite::h*constants::scale));
 				}	
@@ -68,7 +78,7 @@ std::vector<std::vector<Tile*>>* levels::setUpLevel1(SDL_Renderer* p_renderer)
 				{
 					for(int j = 0; j < columns; ++j)
 					{
-							(*tiles)[i][j] = new Tile(grassTexture, utils::createRect(0, 0, constants::tileSprite::w, constants::tileSprite::h)
+							tiles->at(i).at(j) = new Tile(grassTexture, tileSrcRect
 										  			  , utils::createRect(j*constants::scale*constants::tileSprite::w, i*constants::scale*constants::tileSprite::h
 										  		 	  , constants::tileSprite::w*constants::scale, constants::tileSprite::h*constants::scale));
 					}

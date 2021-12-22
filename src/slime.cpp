@@ -1,9 +1,9 @@
 #include "Slime.hpp"
-#include "Globals.hpp"
+#include "constants.hpp"
 #include <SDL.h>
 
-Slime::Slime(SDL_Texture* p_tex, SDL_Rect p_src, SDL_Rect p_dst, float p_vectorX)
-    :GameObject{p_tex, p_src, p_dst}
+Slime::Slime(SDL_Texture* p_tex, SDL_Rect p_src, SDL_Rect p_dst, SDL_FRect p_collisionRect, float p_vectorX)
+    :GameObject{p_tex, p_src, p_dst, p_collisionRect}
 {
     objectType = ObjectType::slime;
     vector[0] = p_vectorX;
@@ -21,8 +21,9 @@ void Slime::move(float p_dt)
     
     vector[1] += constants::gravity * p_dt;
 
-    dst.x = pos[0];
 	collisionRect.x = pos[0];
-	dst.y = pos[1];
 	collisionRect.y = pos[1];
+
+    dst.x = pos[0];
+	dst.y = pos[1] - (dst.h - collisionRect.h);
 }

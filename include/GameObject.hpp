@@ -13,7 +13,18 @@ enum class ObjectType
 class GameObject {
 public:
 	GameObject();
-	GameObject(SDL_Texture* p_texture, SDL_Rect p_src, SDL_Rect p_dst);
+
+	/**
+	 * @brief Construct a new GameObject object. Has a test function.
+	 * 
+	 * @sa Test::GameObject_Constructor()
+	 * 
+	 * @param p_texture 
+	 * @param p_src 
+	 * @param p_dst 
+	 * @param p_collisionRect 
+	 */
+	GameObject(SDL_Texture* p_texture, SDL_Rect p_src, SDL_Rect p_dst, SDL_FRect p_collisionRect = {0, 0, 0, 0});
 	SDL_Texture* getTexture();
 	void setTexture(SDL_Texture* p_tex);
 	SDL_FRect getCollisionRect();
@@ -34,16 +45,24 @@ public:
 	float* getVector();
 	void setVector(float p_x, float p_y);
 	float* getpP();
-	std::vector<std::vector<float>>* detectCollision(GameObject* p_gameObject);
+
+	/**
+ 	* @brief Detects wether a collision between this GameObject and another GameObject is happening.
+	*
+ 	* @param p_gameObject Pointer to the other GameObject
+ 	* @return Returns an std::vector<SDL_FPoint>* containing the outer points(float) of the collisionRectangles that collided with 
+ 	* 		   another collisionRectangle (points of both GameObjects) or nullptr for no collision.
+ 	*/
+	std::vector<SDL_FPoint>* detectCollision(GameObject* p_gameObject);
 	
 protected:
 	SDL_Texture* texture {nullptr};
-	float pos[2];
-	float previousPos[2];
-	SDL_FRect collisionRect;
-	SDL_Rect src;
-	SDL_Rect dst;
+	float pos[2] {0, 0};
+	float previousPos[2] {0, 0};
+	SDL_FRect collisionRect {0, 0, 0, 0};
+	SDL_Rect src {0, 0, 0, 0};
+	SDL_Rect dst {0, 0, 0, 0};
 	SDL_RendererFlip flipFlag {SDL_FLIP_NONE};
 	ObjectType objectType {ObjectType::none};
-	float vector[2] = { 0, 0 };
+	float vector[2] = {0, 0};
 };

@@ -32,6 +32,11 @@ void RenderWindow::render(GameObject* p_object)
 	tex = p_object->getTexture();
 	SDL_Rect src = p_object->getSrc();
 	SDL_Rect dst = p_object->getDst();
+
+	//DEBUG
+	if(p_object->getObjectType() == ObjectType::slime)
+		std::cout << "dst in RenderWindow::render(): " << dst.x << ", " << dst.y << ", " << dst.w << ", " << dst.h << '\n';
+
 	SDL_RendererFlip flip = p_object->getFlip();
 	if(flip == SDL_FLIP_NONE)
 		SDL_RenderCopy(renderer, tex, &src, &dst);

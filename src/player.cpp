@@ -1,12 +1,12 @@
 #include "Player.hpp"
 #include "GameObject.hpp"
-#include "Globals.hpp"
+#include "Constants.hpp"
 #include "utils.hpp"
 #include <SDL.h>
 #include <iostream>
 
-Player::Player(SDL_Texture* p_tex, SDL_Rect p_src, SDL_Rect p_dst)
-	:GameObject{p_tex, p_src, p_dst}
+Player::Player(SDL_Texture* p_tex, SDL_Rect p_src, SDL_Rect p_dst, SDL_FRect p_collisionRect)
+	:GameObject{p_tex, p_src, p_dst, p_collisionRect}
 {
 	objectType = ObjectType::player;
 }
@@ -41,9 +41,11 @@ void Player::move(float p_dt, int p_speed) {
 	pos[0] += p_speed * p_dt * vector[0];
 	pos[1] += p_dt * vector[1];
 	vector[1] += constants::gravity * p_dt;
-	dst.x = pos[0];
+	
 	collisionRect.x = pos[0];
-	dst.y = pos[1];
 	collisionRect.y = pos[1];
+
+	dst.x = pos[0];
+	dst.y = pos[1] - (dst.h - collisionRect.h);
 }
 

@@ -1,18 +1,40 @@
 #include "GameObject.hpp"
 #include "utils.hpp"
 #include <SDL.h>
+#include <iostream>
 #include <vector>
 
 
 GameObject::GameObject(){}
 
-GameObject::GameObject(SDL_Texture* p_texture, SDL_Rect p_src, SDL_Rect p_dst)
-	:texture{ p_texture }, pos{static_cast<float>(p_dst.x), static_cast<float>(p_dst.y)}, src{p_src}, dst{p_dst}
+
+/**
+ * @sa GameObject.hpp
+ * @sa Test::GameObject_Constructor()
+ */
+GameObject::GameObject(SDL_Texture* p_texture, SDL_Rect p_srcRect, SDL_Rect p_dstRect, SDL_FRect p_collisionRect)
+	:texture{p_texture}, src{p_srcRect}, dst{p_dstRect} 
 {
-	collisionRect.x = p_dst.x;
-	collisionRect.y = p_dst.y;
-	collisionRect.w = p_dst.w;
-	collisionRect.h = p_dst.h;
+	if((!p_collisionRect.w) || (!p_collisionRect.h))
+	{
+		pos[0] = p_dstRect.x;
+		pos[1] = p_dstRect.y;
+
+		collisionRect.x = p_dstRect.x;
+		collisionRect.y = p_dstRect.y;
+		collisionRect.w = p_dstRect.w;
+		collisionRect.h = p_dstRect.h;
+	}
+	else
+	{
+		collisionRect.x = p_dstRect.x;
+		pos[0] = collisionRect.x;
+		collisionRect.y = p_dstRect.y + (p_dstRect.h - p_collisionRect.h);
+		pos[1] = collisionRect.y;
+
+		collisionRect.w = p_collisionRect.w;
+		collisionRect.h = p_collisionRect.h;
+	}
 }
 
 SDL_Texture* GameObject::getTexture()
@@ -35,19 +57,22 @@ SDL_Rect GameObject::getSrc()
 	return(src);
 }
 
-void GameObject::setSrc(SDL_Rect p_src)
+void GameObject::setSrc(SDL_Rect p_srcRect)
 {
-	src = p_src;
+	src = p_srcRect;
 }
 
 SDL_Rect GameObject::getDst()
 {
+	//DEBUG
+	if(objectType == ObjectType::slime)
+		std::cout << "in getDst(): dst.y: " << dst.y << '\n';
 	return(dst);
 }
 
-void GameObject::setDst(SDL_Rect p_dst)
+void GameObject::setDst(SDL_Rect p_dstRect)
 {
-	dst = p_dst;
+	dst = p_dstRect;
 }
 
 float GameObject::getX()
@@ -62,8 +87,8 @@ float GameObject::getY()
 
 void GameObject::setX(float p_x)
 {
-	pos[0] = p_x;
 	collisionRect.x = p_x;
+	pos[0] = p_x;
 	dst.x = p_x;
 }
 
@@ -71,7 +96,12 @@ void GameObject::setY(float p_y)
 {
 	pos[1] = p_y;
 	collisionRect.y = p_y;
-	dst.y = p_y;
+	
+	dst.y = p_y - (dst.h - collisionRect.h);
+
+	//DEBUG
+	if(objectType == ObjectType::slime)
+		std::cout << "(after) setY(): dst.y: " << dst.y << '\n';
 }
 
 SDL_RendererFlip GameObject::getFlip()
@@ -100,12 +130,12 @@ void GameObject::setVector(float p_x, float p_y) {
 
 int GameObject::getH()
 {
-	return dst.h;
+	return collisionRect.h;
 }
 
 int GameObject::getW()
 {
-	return dst.w;
+	return collisionRect.w;
 }
 
 float* GameObject::getPosition()
@@ -119,64 +149,48 @@ float* GameObject::getpP()
 }
 
 
-/**
- * @brief checks wether this object is colliding with another GameObject or not
- * 
- * ? does it make a difference if I make all the points or just take the dst rect points
- * 
- * @param p_gameObject the object for which we have to check if we collide with it
- * @return std::vector<std::vector<float>>* returns the points of the rectangles that collided with the other object; nullptr for no collision
- */
-
-std::vector<std::vector<float>>* GameObject::detectCollision(GameObject* p_gameObject)
+std::vector<SDL_FPoint>* GameObject::detectCollision(GameObject* p_otherGameObject)
 {
-	if(!p_gameObject)
+	if(!p_otherGameObject)
 	{
 		return (nullptr);
 	}
 
-	float thisPoints[4][2] = { 	{pos[0], pos[1]},
-							   	{pos[0] + dst.w, pos[1]},
-							   	{pos[0] + dst.w, pos[1] + dst.h},
-						       	{pos[0], pos[1] + dst.h}};
+	SDL_FPoint thisPoints[4] { 	{collisionRect.x, collisionRect.y},
+							   	{collisionRect.x + collisionRect.w, collisionRect.y},
+							   	{collisionRect.x + collisionRect.w, collisionRect.y + collisionRect.h},
+						       	{collisionRect.x, collisionRect.y + collisionRect.h}};
 
-	float objectX	{p_gameObject->getX()};
-	float objectY	{p_gameObject->getY()};
-	int objectH		{p_gameObject->getH()};
-	int objectW 	{p_gameObject->getW()};
+	SDL_FRect objCR {p_otherGameObject->getCollisionRect()};
 
-	float objectPoints[4][2] = {	{objectX, objectY},
-									{objectX + objectW, objectY},
-									{objectX + objectW, objectY + objectH},
-									{objectX, objectY + objectH}};							
+	SDL_FPoint objectPoints[4] = { 	{objCR.x, objCR.y},
+									{objCR.x + objCR.w, objCR.y},
+									{objCR.x + objCR.w, objCR.y + objCR.h},
+									{objCR.x, objCR.y + objCR.h}};							
 	
 
-	std::vector<std::vector<float>>* collisionPoints = new std::vector<std::vector<float>>;
+	std::vector<SDL_FPoint>* collisionPoints = new std::vector<SDL_FPoint>;
 	
-	int count {};
+	int count {0};
 
 	for(int i = 0; i < 4; i++)
 	{
-		if(utils::collision_PointVsRect(thisPoints[i], p_gameObject->getCollisionRect()))
+		if(utils::collision_PointVsRect(&thisPoints[i], &objCR))
 		{
-			std::vector<float> point;
-			point.push_back(thisPoints[i][0]);
-			point.push_back(thisPoints[i][1]);
-			collisionPoints->push_back(point);
+			collisionPoints->push_back(thisPoints[i]);
 			++count;
 		}
-		if(utils::collision_PointVsRect(objectPoints[i], collisionRect))
+		if(utils::collision_PointVsRect(&objectPoints[i], &this->collisionRect))
 		{
-			std::vector<float> point;
-			point.push_back(objectPoints[i][0]);
-			point.push_back(objectPoints[i][1]);
-			collisionPoints->push_back(point);
+			collisionPoints->push_back(objectPoints[i]);
 			++count;
 		}
 	}
 
 	if(count > 0)
+	{
 		return(collisionPoints);
+	}	
 	else
 		return(nullptr);
 }

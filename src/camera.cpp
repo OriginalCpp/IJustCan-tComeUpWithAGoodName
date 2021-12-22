@@ -1,6 +1,6 @@
 #include "Camera.hpp"
 #include "Player.hpp"
-#include "Globals.hpp"
+#include "Constants.hpp"
 #include "utils.hpp"
 #include <SDL.h>
 #include <iostream>
@@ -34,62 +34,39 @@ float* Camera::trackObject()
 {
     if(isTracking)
     {
-        float objectPoint[2] = {objectToTrack->getX(), objectToTrack->getY()};
+        SDL_FPoint objectPoint = {objectToTrack->getX(), objectToTrack->getY()};
 
-        std::cout << "Object: " << objectPoint[0] << ", " << objectPoint[1] << '\n';
-        std::cout << "Margin: " << margin.x << ", " << margin.y << ", " << margin.w << ", " << margin.h << '\n'; 
-
-        if(!utils::collision_PointVsRect(objectPoint, margin))
+        if(!utils::collision_PointVsRect(&objectPoint, &margin))
         {
             float* offset = new float[2]{0, 0};
 
-            //std::cout << "Probably garbage values: " << offset[0] << ", " << offset[1] << '\n';
-
             bool check {};
-            // bool o0changed{};
-            // bool o1changed{};
 
-            if (objectPoint[0] < margin.x)
+            if (objectPoint.x <= margin.x)
             {
-                //std::cout << "objectPoint[0] < margin.x \n";
-                offset[0] = (margin.x - objectPoint[0]);
-                //o0changed = true;
-                //std::cout << "margin.x - objectPoint[0] = " << (margin.x - objectPoint[0]) << '\n';
+                offset[0] = (margin.x - objectPoint.x);
                 check = true;
             }
-            else if (objectPoint[0] > (margin.x + margin.w))
+            else if (objectPoint.x >= (margin.x + margin.w))
             {
-                //std::cout << "objectPoint[0] > (margin.x + margin.w) \n";
-                offset[0] = ((margin.x + margin.w) - objectPoint[0]);
-                //o0changed = true;
-                //std::cout << "(margin.x + margin.w) - objectPoint[0] = " << ((margin.x + margin.w) - objectPoint[0]) << '\n';
+                offset[0] = margin.x + margin.w - objectPoint.x;
                 check = true;
             }
 
-            if (objectPoint[1] < margin.y)
+            if (objectPoint.y <= margin.y)
             {
-                //std::cout << "objectPoint[1] < margin.y \n";
-                offset[1] = (margin.y - objectPoint[1]);
-                //o1changed = true;
-                //std::cout << "margin.y - objectPoint[1] = " << (margin.y - objectPoint[1]) << '\n';
+                offset[1] = (margin.y - objectPoint.y);
                 check = true;
             }
-            else if(objectPoint[1] > (margin.y + margin.h))
+            else if(objectPoint.y >= (margin.y + margin.h))
             {
-                //std::cout << "objectPoint[1] > (margin.y + margin.h)\n";
-                offset[1] = ((margin.y + margin.h) - objectPoint[1]);
-                //o1changed = true;
-                //std::cout << "(margin.y + margin.h) - objectPoints[1] = " << ((margin.y + margin.h) - objectPoint[1]) << '\n';
+                offset[1] = ((margin.y + margin.h) - objectPoint.y);
                 check = true;
             }
 
 
             if(check)
-            {
-                //std::cout << "Offset: " << offset[0] << ',' << offset[1] << '\n';
-                //std::cout << "o0changed: " << o0changed << ", o1changed: " << o1changed << '\n';
                 return(offset);
-            }
             else
             {
                 std::cout << "Error: in trackObject(): object is in margin, even though collision_PointVsRect false\n";
