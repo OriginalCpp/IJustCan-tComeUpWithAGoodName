@@ -11,6 +11,13 @@ namespace Test
     void utils_collision_PointVsRect();
 
     /**
+     * @brief Test utils::getIntersectionCornerFPoints().
+     * 
+     * @sa utils::getIntersectionCornerFPoints()
+     */
+    void utils_getIntersectionCornerFPoints();
+
+    /**
      * @brief Test GameObject::GameObject().
      * 
      * @sa GameObject::GameObject()
@@ -20,7 +27,7 @@ namespace Test
     void GameObject_Constructor(SDL_Renderer* p_renderer);
 
     /**
-     * @brief Test GameObject::setX()
+     * @brief Test GameObject::setX() and GameObject::getX()
      * 
      * @sa GameObject::setX()
      */

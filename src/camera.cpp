@@ -1,80 +1,83 @@
+/**
+ * @file camera.cpp
+ * @brief Definitions of all functions of the Camera class.
+ * @see Camera.hpp for more documentation.
+ * @version 0.1
+ * @date 2021-12-23
+ * 
+ * @copyright Copyright (c) 2021
+ * 
+ */
+
 #include "Camera.hpp"
-#include "Player.hpp"
+
 #include "Constants.hpp"
+#include "Player.hpp"
 #include "utils.hpp"
-#include <SDL.h>
 #include <iostream>
+#include <SDL.h>
 
 
 
 Camera::Camera(SDL_FRect p_margin, GameObject* p_object, bool p_isTracking)
-    :margin{p_margin}, objectToTrack{p_object}, isTracking{p_isTracking}
+    :m_margin{p_margin}, m_objectToTrack{p_object}, m_isTracking{p_isTracking}
 {}
+
+
 
 void Camera::hasToTrack()
 {
-    if(!isTracking)
+    if(!m_isTracking)
     {
-        if((objectToTrack->getX() >= margin.x) && (objectToTrack->getX() <= margin.x + margin.w))
+        if((m_objectToTrack->getX() >= m_margin.x) && (m_objectToTrack->getX() <= m_margin.x + m_margin.w))
         {
-            isTracking = true;
+            m_isTracking = true;
         }     
     }
 }
 
-/**
- * @brief returns the offset that has to be made to center the player again
- * 
- * TODO: make the cam go smooth not so abrupt especially when moving in Y direction
- * 
- * @return int* returns the offset (X,Y) 
- */
 
-float* Camera::trackObject()
+
+void Camera::trackObject(float (&p_offset)[2])
 {
-    if(isTracking)
+    p_offset[0] = 0;
+    p_offset[1] = 0;
+    
+    if(m_isTracking && m_objectToTrack)
     {
-        SDL_FPoint objectPoint = {objectToTrack->getX(), objectToTrack->getY()};
+        SDL_FPoint objectPoint = {m_objectToTrack->getX(), m_objectToTrack->getY()};
 
-        if(!utils::collision_PointVsRect(&objectPoint, &margin))
+        if(!utils::collision_PointVsRect(&objectPoint, &m_margin))
         {
-            float* offset = new float[2]{0, 0};
 
             bool check {};
 
-            if (objectPoint.x <= margin.x)
+            if (objectPoint.x <= m_margin.x)
             {
-                offset[0] = (margin.x - objectPoint.x);
+                p_offset[0] = (m_margin.x - objectPoint.x);
                 check = true;
             }
-            else if (objectPoint.x >= (margin.x + margin.w))
+            else if (objectPoint.x >= (m_margin.x + m_margin.w))
             {
-                offset[0] = margin.x + margin.w - objectPoint.x;
-                check = true;
-            }
-
-            if (objectPoint.y <= margin.y)
-            {
-                offset[1] = (margin.y - objectPoint.y);
-                check = true;
-            }
-            else if(objectPoint.y >= (margin.y + margin.h))
-            {
-                offset[1] = ((margin.y + margin.h) - objectPoint.y);
+                p_offset[0] = m_margin.x + m_margin.w - objectPoint.x;
                 check = true;
             }
 
-
-            if(check)
-                return(offset);
-            else
+            if (objectPoint.y <= m_margin.y)
             {
+                p_offset[1] = (m_margin.y - objectPoint.y);
+                check = true;
+            }
+            else if(objectPoint.y >= (m_margin.y + m_margin.h))
+            {
+                p_offset[1] = ((m_margin.y + m_margin.h) - objectPoint.y);
+                check = true;
+            }
+
+
+            if(!check)
                 std::cout << "Error: in trackObject(): object is in margin, even though collision_PointVsRect false\n";
-                return(nullptr);
-            }
 
         }
     }
-
-    return(nullptr);
 }

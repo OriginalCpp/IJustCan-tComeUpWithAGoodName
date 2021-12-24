@@ -1,17 +1,18 @@
-#include "RenderWindow.hpp"
-#include "utils.hpp"
-#include "GameObject.hpp"
-#include "Player.hpp"
-#include "Slime.hpp"
-#include "Tiles.hpp"
 #include "Camera.hpp"
-#include "Levels.hpp"
 #include "Constants.hpp"
+#include "GameObject.hpp"
+#include "Levels.hpp"
+#include "Player.hpp"
+#include "RenderWindow.hpp"
+#include "Slime.hpp"
 #include "Tests.hpp"
+#include "Tiles.hpp"
+#include "utils.hpp"
+#include <iostream>
 #include <SDL.h>
 #include <SDL_image.h>
-#include <iostream>
 #include <vector>
+
 
 
 /**
@@ -19,12 +20,18 @@
  * 
  * ? class for (mathematical) vectors in objects so that you can overload the operators for vector arithmetics ?
  * 
- * !sprites have to be in the bottom left corner !!!
+ * !sprites have to be in the bottom left corner !!! is there a fix for this ?
  * 
- * ! @bug collision: if standing next to a two tiles tall tile thats not on the ground and pressing a direction you cannot jump
- * !->multiple calls to detectCollision and as return only a point and then resolve one collision after the other??
- * 
+ * ! @bug one glues to the side of block.... + collision: if standing next to a two tiles tall tile thats not on the ground and pressing a direction you cannot jump
+ * !->multiple calls to handleCollision and as return only a point and then resolve one collision after the other??
+ *
+ * TODO: update documentation of GameObject::handleCollision()
+ * TODO: refactor resolveCollision()
+ * TODO: make all the functions which return non fundamental times return a pointer
+ * TODO: rename private members of a class/struct m_name
+ * TODO: const after all member functions where possible
  * TODO: Slime can kill player and player can kill slime 
+ * TODO: make camera go smooth
  * TODO: make animations
  * TODO: make function to add smth to X/Y (GAmeObject) so that I dont have to set everytime + use that in move functions
  * TODO: make an offset var in GameObject to hold the value of dst.h - collR.h or smth like that
@@ -50,10 +57,6 @@ int main(int argc, char* argv[])
 	int level {1};
 
 	RenderWindow window("JumpyMagician.exe", constants::window::w, constants::window::h);
-	
-	Test::utils_collision_PointVsRect();
-	Test::GameObject_Constructor(window.getRenderer());
-	Test::GameObject_setXgetX(window.getRenderer());
 
 	SDL_Rect playerSrcRect {0, 0, constants::playerSprite::w, constants::playerSprite::h};
 	SDL_Rect playerDstRect {100, 100, playerSrcRect.w*constants::scale, playerSrcRect.h*constants::scale};
@@ -78,20 +81,18 @@ int main(int argc, char* argv[])
 
 
 	SDL_Event event;
-	float dt {0.0f};
-	std::vector<SDL_FPoint>* collisionPoints {nullptr};
-	int playerSpeed {400};
+	float elapsedTimeInSeconds {0.0f};
 	int amountOfJumps {constants::maxAmountOfJumps};
 	bool grounded {false};
-	float* offsetToApply {nullptr};
-	float currentFrameTime{static_cast<float>(SDL_GetTicks())/1000};
-	float previousFrameTime{0.0f};
+	float offsetToApply[2] {0, 0};
+	float currentFrameTimeInSeconds{static_cast<float>(SDL_GetTicks())/1000};
+	float previousFrameTimeInSeconds{0.0f};
 
 	while (gameRunning) 
 	{
-		previousFrameTime = currentFrameTime;
-		currentFrameTime = static_cast<float>(SDL_GetTicks())/1000;
-		dt = currentFrameTime - previousFrameTime; 
+		previousFrameTimeInSeconds = currentFrameTimeInSeconds;
+		currentFrameTimeInSeconds = static_cast<float>(SDL_GetTicks())/1000;
+		elapsedTimeInSeconds = currentFrameTimeInSeconds - previousFrameTimeInSeconds; 
 
 		while (SDL_PollEvent(&event)) {
 			switch (event.type)
@@ -113,7 +114,7 @@ int main(int argc, char* argv[])
 						case(SDLK_SPACE):
 							if(amountOfJumps > 0)
 							{
-								player.setVector((player.getVector())[0], -1000);
+								player.jump();
 								--amountOfJumps;
 							}
 							break;
@@ -134,86 +135,55 @@ int main(int argc, char* argv[])
 			}
 		}
 
-		player.move(dt, playerSpeed);
-		larry.move(dt);
+		player.move(elapsedTimeInSeconds);
+		larry.move(elapsedTimeInSeconds);
+
+		//Collision
+		grounded = false;
+
+		for(std::vector<Tile*>& row : (*tiles))
+		{
+			for(Tile* tile : row)
+			{
+				if(player.handleCollision(tile))
+				{
+					amountOfJumps = constants::maxAmountOfJumps;		
+					grounded = true;
+				}
+
+				larry.handleCollision(tile);
+			}
+		}	
+
+		if(!grounded && (amountOfJumps == constants::maxAmountOfJumps))
+			--amountOfJumps;
 		
-		for(int i = 0; i < static_cast<int>(tiles->size()); i++)
-		{
-			for(int j = 0; j < static_cast<int>((*tiles)[0].size()); ++j)
-			{
-				collisionPoints = player.detectCollision((*tiles)[i][j]);
-				if(collisionPoints)
-				{
-					if (utils::resolveCollision(&player, collisionPoints, (*tiles)[i][j]))
-				 	{
-						amountOfJumps = constants::maxAmountOfJumps;
-			 			grounded = true;
-			 		}
-					else
-						grounded = false;
-
-					delete collisionPoints;
-					collisionPoints = nullptr;
-				}
-				collisionPoints = larry.detectCollision((*tiles)[i][j]);
-				if(collisionPoints)
-				{
-					utils::resolveCollision(&larry, collisionPoints, (*tiles)[i][j]);
-					delete collisionPoints;
-					collisionPoints = nullptr;
-				}
-			}
-		}
-		collisionPoints = player.detectCollision(&larry);
-		if(collisionPoints)
-		{
-			utils::resolveCollision(&player, collisionPoints, &larry);
-		}
-
-		if(!grounded)
-		{
-			if(amountOfJumps == constants::maxAmountOfJumps)
-			{
-				--amountOfJumps;
-			}
-		}
-
+		//CAMERA
 		camera.hasToTrack();
-		offsetToApply = camera.trackObject();
-		if(offsetToApply)
+		camera.trackObject(offsetToApply);
+		if(offsetToApply[0] || offsetToApply[1])
 		{
-			for(int i = 0; i < static_cast<int>(tiles->size()); ++i)
-			{
-				for(int j = 0; j < static_cast<int>((*tiles)[0].size()); ++j)
-				{
-					if ((*tiles)[i][j])
+			for(const std::vector<Tile*>& row : (*tiles))
+				for(Tile* tile : row)
+					if (tile)
 					{
-						(*tiles)[i][j]->setX((*tiles)[i][j]->getX() + offsetToApply[0]);
-						(*tiles)[i][j]->setY((*tiles)[i][j]->getY() + offsetToApply[1]);
+						tile->setX(tile->getX() + offsetToApply[0]);
+						tile->setY(tile->getY() + offsetToApply[1]);
 					}
-				}
-			}
+
 			larry.setX(larry.getX() + offsetToApply[0]);
 			larry.setY(larry.getY() + offsetToApply[1]);
 			player.setX(player.getX() + offsetToApply[0]);
 			player.setY(player.getY() + offsetToApply[1]);
-			delete offsetToApply;
-			offsetToApply = nullptr;
 		}
 
 		window.clear();
 
-		for (int i = 0; i < (static_cast<int>(tiles->size())); ++i) 
-		{
-			for(int j = 0; j < static_cast<int>((*tiles)[0].size()); ++j)
-			{
-				if((*tiles)[i][j])
-				{
-					window.render((*tiles)[i][j]);
-				}
-			}
-			
-		}
+		for (std::vector<Tile*> row : (*tiles)) 
+			for(Tile* tile : row)
+				if(tile)
+					window.render(tile);
+		
 		window.render(&larry);
 		window.render(&player);
 

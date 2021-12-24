@@ -30,18 +30,15 @@ void RenderWindow::render(GameObject* p_object)
 {
 	SDL_Texture* tex {nullptr};
 	tex = p_object->getTexture();
-	SDL_Rect src = p_object->getSrc();
-	SDL_Rect dst = p_object->getDst();
-
-	//DEBUG
-	if(p_object->getObjectType() == ObjectType::slime)
-		std::cout << "dst in RenderWindow::render(): " << dst.x << ", " << dst.y << ", " << dst.w << ", " << dst.h << '\n';
-
-	SDL_RendererFlip flip = p_object->getFlip();
-	if(flip == SDL_FLIP_NONE)
-		SDL_RenderCopy(renderer, tex, &src, &dst);
+	
+	const SDL_Rect* src = p_object->getSrc();
+	const SDL_Rect* dst = p_object->getDst();
+	const SDL_RendererFlip* flip = p_object->getFlip();
+	
+	if(*flip == SDL_FLIP_NONE)
+		SDL_RenderCopy(renderer, tex, src, dst);
 	else
-		SDL_RenderCopyEx(renderer, tex, &src, &dst, 0, nullptr, flip);
+		SDL_RenderCopyEx(renderer, tex, src, dst, 0, nullptr, *flip);
 }
 
 

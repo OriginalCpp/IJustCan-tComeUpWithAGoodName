@@ -1,9 +1,10 @@
 #pragma once
-#include "RenderWindow.hpp"
+#include "Camera.hpp"
 #include "GameObject.hpp"
 #include "Player.hpp"
+#include "RenderWindow.hpp"
 #include "Tiles.hpp"
-#include "Camera.hpp"
+#include <memory>
 #include <SDL.h>
 #include <vector>
 
@@ -23,28 +24,39 @@ namespace utils
 	SDL_Texture* loadTexture(const char* p_filePath, SDL_Renderer* p_renderer);
 
 	/**
- 	* @brief Checks if a SDL_Point is in a SDL_Rect. Has a test function.
+ 	* @brief Checks if a SDL_FPoint is in a SDL_FRect. Has a test function.
  	*
-	* @sa Test::utils_collision_PointVsRect() 
+	* @see Test::utils_collision_PointVsRect() 
 	*
  	* @param point
  	* @param rect 
- 	* @return True if point is in rect, false otherwise.
+ 	* @return Returns true if the point is in the rect, false otherwise.
  	*/
-	bool collision_PointVsRect(SDL_FPoint* point, SDL_FRect* rect);
+	bool collision_PointVsRect(const SDL_FPoint* point, const SDL_FRect* rect);
+
+	/**
+	 * @brief Get the corners of p_rect1 and p_rect2 that reside inside each other. Remarks: Has a test function.
+	 * 
+	 * @see Test::utils_getIntersectionCornerFPoints()
+	 * 
+	 * @param p_rect1 
+	 * @param p_rect2 
+	 * @return Returns a pointer to an std::vector<SDL_FPoint> containing the corners of @e both rects that reside inside each other 
+	 */
+	std::unique_ptr<std::vector<SDL_FPoint>> getIntersectionCornerFPoints(const SDL_FRect* const p_rect1, const SDL_FRect* const p_rect2);
 
 
 	/**
-	 * @brief Checks from which direction the collision of two GameObjects is happening and accordingly adjusts the position and the vector of the p_dynamicGameObject
-	 * 
-	 * TODO: In mehrere Parts aufteilen damit mehrere Teile des Programms die Funktion besser nutzen können (der Slime z.B.)
-	 * 
-	 * @param p_dynamicGameObject GameObject which collides with p_staticGameObject
-	 * @param p_collisionPoint    Outer Points of the collision rectangle of both GameObjects that that intersect with the collision rectangle of the other GameObject
-	 * @param p_staticGameObject  GameObject that the p_dynamicGameObject collides with
-	 * @return Returns a bool. True if the player is on the floor/ground or false if he is not.
-	 */
-	bool resolveCollision(GameObject* p_dynamicGameObject, std::vector<SDL_FPoint>* p_collisionPoint, GameObject* p_staticGameObject);
+ 	* @brief Checks from which direction the collision of two GameObjects is happening and accordingly adjusts the position and the vector of the p_dynamicGameObject
+ 	* 
+ 	* TODO: In mehrere Parts aufteilen damit mehrere Teile des Programms die Funktion besser nutzen können (der Slime z.B.)
+ 	* 
+ 	* @param p_dynamicGameObject GameObject which collides with p_staticGameObject
+ 	* @param p_collisionPoint    Outer Points of the collision rectangle of both GameObjects that that intersect with the collision rectangle of the other GameObject
+ 	* @param p_staticGameObject  GameObject that the p_dynamicGameObject collides with
+ 	* @return Returns true if the p_dynamicGameObject is on the floor/ground, otherwise false.
+ 	*/
+	bool resolveCollision(GameObject* const p_dynamicGameObject, const std::unique_ptr<std::vector<SDL_FPoint>> p_outerPoints, const GameObject* const p_staticGameObject);
 
 
 

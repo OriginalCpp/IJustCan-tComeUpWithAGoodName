@@ -1,196 +1,186 @@
+/**
+ * @file gameobject.cpp
+ * @brief All definitions of member functions of class GameObject.
+ * @see GameObject.hpp for more documentation.
+ * @version 0.1
+ * @date 2021-12-22
+ * 
+ * @copyright Copyright (c) 2021
+ */
+
 #include "GameObject.hpp"
+
 #include "utils.hpp"
-#include <SDL.h>
 #include <iostream>
+#include <memory>
+#include <SDL.h>
+#include <utility>
 #include <vector>
 
 
 GameObject::GameObject(){}
 
 
-/**
- * @sa GameObject.hpp
- * @sa Test::GameObject_Constructor()
- */
-GameObject::GameObject(SDL_Texture* p_texture, SDL_Rect p_srcRect, SDL_Rect p_dstRect, SDL_FRect p_collisionRect)
-	:texture{p_texture}, src{p_srcRect}, dst{p_dstRect} 
+GameObject::GameObject(SDL_Texture* p_texture, SDL_Rect p_srcRect, SDL_Rect p_dstRect, SDL_FRect p_hitbox)
+	:m_texture{p_texture}, m_srcRect{p_srcRect}, m_dstRect{p_dstRect} 
 {
-	if((!p_collisionRect.w) || (!p_collisionRect.h))
+	if((!p_hitbox.w) || (!p_hitbox.h))
 	{
-		pos[0] = p_dstRect.x;
-		pos[1] = p_dstRect.y;
+		m_pos->x = p_dstRect.x;
+		m_pos->y = p_dstRect.y;
 
-		collisionRect.x = p_dstRect.x;
-		collisionRect.y = p_dstRect.y;
-		collisionRect.w = p_dstRect.w;
-		collisionRect.h = p_dstRect.h;
+		m_hitbox.x = p_dstRect.x;
+		m_hitbox.y = p_dstRect.y;
+		m_hitbox.w = p_dstRect.w;
+		m_hitbox.h = p_dstRect.h;
 	}
 	else
 	{
-		collisionRect.x = p_dstRect.x;
-		pos[0] = collisionRect.x;
-		collisionRect.y = p_dstRect.y + (p_dstRect.h - p_collisionRect.h);
-		pos[1] = collisionRect.y;
+		m_hitbox.x = p_dstRect.x;
+		m_pos->x = m_hitbox.x;
+		m_hitbox.y = p_dstRect.y + (p_dstRect.h - p_hitbox.h);
+		m_pos->y = m_hitbox.y;
 
-		collisionRect.w = p_collisionRect.w;
-		collisionRect.h = p_collisionRect.h;
+		m_hitbox.w = p_hitbox.w;
+		m_hitbox.h = p_hitbox.h;
 	}
 }
 
-SDL_Texture* GameObject::getTexture()
+
+
+SDL_Texture* GameObject::getTexture() const
 {
-	return(texture);
+	return(m_texture);
 }
 
 void GameObject::setTexture(SDL_Texture* p_tex)
 {
-	texture = p_tex;
+	m_texture = p_tex;
 }
 
-SDL_FRect GameObject::getCollisionRect()
-{
-	return collisionRect;
-}
 
-SDL_Rect GameObject::getSrc()
-{
-	return(src);
-}
 
-void GameObject::setSrc(SDL_Rect p_srcRect)
+float GameObject::getX() const
 {
-	src = p_srcRect;
-}
-
-SDL_Rect GameObject::getDst()
-{
-	//DEBUG
-	if(objectType == ObjectType::slime)
-		std::cout << "in getDst(): dst.y: " << dst.y << '\n';
-	return(dst);
-}
-
-void GameObject::setDst(SDL_Rect p_dstRect)
-{
-	dst = p_dstRect;
-}
-
-float GameObject::getX()
-{
-	return pos[0];
-}
-
-float GameObject::getY()
-{
-	return pos[1];
+	return m_pos->x;
 }
 
 void GameObject::setX(float p_x)
 {
-	collisionRect.x = p_x;
-	pos[0] = p_x;
-	dst.x = p_x;
+	m_hitbox.x = p_x;
+	m_pos->x = p_x;
+	m_dstRect.x = p_x;
+}
+
+
+
+float GameObject::getY() const
+{
+	return m_pos->y;
 }
 
 void GameObject::setY(float p_y)
 {
-	pos[1] = p_y;
-	collisionRect.y = p_y;
+	m_pos->y = p_y;
+	m_hitbox.y = p_y;
 	
-	dst.y = p_y - (dst.h - collisionRect.h);
-
-	//DEBUG
-	if(objectType == ObjectType::slime)
-		std::cout << "(after) setY(): dst.y: " << dst.y << '\n';
+	m_dstRect.y = p_y - (m_dstRect.h - m_hitbox.h);
 }
 
-SDL_RendererFlip GameObject::getFlip()
+
+
+int GameObject::getW() const
 {
-	return flipFlag;
+	return m_hitbox.w;
+}
+
+int GameObject::getH() const
+{
+	return m_hitbox.h;
+}
+
+
+
+const SDL_FPoint* GameObject::getPosition() const
+{
+	return m_pos;
+}
+
+const SDL_FPoint* GameObject::getPreviousPosition() const
+{
+	return m_previousPos;
+}
+
+const float* GameObject::getVector() const
+{
+	return(m_vector);
+}
+
+void GameObject::setVector(float p_x, float p_y) 
+{
+	m_vector[0] = p_x;
+	m_vector[1] = p_y;
+}
+
+
+
+
+const SDL_Rect* GameObject::getSrc() const
+{
+	return(&m_srcRect);
+}
+
+void GameObject::setSrc(SDL_Rect p_srcRect)
+{
+	m_srcRect = p_srcRect;
+}
+
+const SDL_Rect* GameObject::getDst() const
+{
+	return(&m_dstRect);
+}
+
+const SDL_FRect* GameObject::getHitBox() const
+{
+
+	return &m_hitbox;
+}
+
+
+
+const SDL_RendererFlip* GameObject::getFlip() const
+{
+	return &m_flipFlag;
 }
 
 void GameObject::setFlip(SDL_RendererFlip p_flip)
 {
-	flipFlag = p_flip;
+	m_flipFlag = p_flip;
 }
 
-ObjectType GameObject::getObjectType()
+const ObjectType* GameObject::getObjectType() const
 {
-	return objectType;
-}
-
-float* GameObject::getVector() {
-	return(vector);
-}
-
-void GameObject::setVector(float p_x, float p_y) {
-	vector[0] = p_x;
-	vector[1] = p_y;
-}
-
-int GameObject::getH()
-{
-	return collisionRect.h;
-}
-
-int GameObject::getW()
-{
-	return collisionRect.w;
-}
-
-float* GameObject::getPosition()
-{
-	return pos;
-}
-
-float* GameObject::getpP()
-{
-	return previousPos;
+	return &m_objectType;
 }
 
 
-std::vector<SDL_FPoint>* GameObject::detectCollision(GameObject* p_otherGameObject)
+
+bool GameObject::handleCollision(const GameObject* const p_otherGameObject)
 {
 	if(!p_otherGameObject)
+		return (false);
+
+	std::unique_ptr<std::vector<SDL_FPoint>> cornerPoints {utils::getIntersectionCornerFPoints(&m_hitbox, p_otherGameObject->getHitBox())};
+
+	if(cornerPoints)
 	{
-		return (nullptr);
+		bool grounded {false};
+
+		if (utils::resolveCollision(this, std::move(cornerPoints), p_otherGameObject))
+			grounded = true;
+
+		return(grounded);
 	}
 
-	SDL_FPoint thisPoints[4] { 	{collisionRect.x, collisionRect.y},
-							   	{collisionRect.x + collisionRect.w, collisionRect.y},
-							   	{collisionRect.x + collisionRect.w, collisionRect.y + collisionRect.h},
-						       	{collisionRect.x, collisionRect.y + collisionRect.h}};
-
-	SDL_FRect objCR {p_otherGameObject->getCollisionRect()};
-
-	SDL_FPoint objectPoints[4] = { 	{objCR.x, objCR.y},
-									{objCR.x + objCR.w, objCR.y},
-									{objCR.x + objCR.w, objCR.y + objCR.h},
-									{objCR.x, objCR.y + objCR.h}};							
-	
-
-	std::vector<SDL_FPoint>* collisionPoints = new std::vector<SDL_FPoint>;
-	
-	int count {0};
-
-	for(int i = 0; i < 4; i++)
-	{
-		if(utils::collision_PointVsRect(&thisPoints[i], &objCR))
-		{
-			collisionPoints->push_back(thisPoints[i]);
-			++count;
-		}
-		if(utils::collision_PointVsRect(&objectPoints[i], &this->collisionRect))
-		{
-			collisionPoints->push_back(objectPoints[i]);
-			++count;
-		}
-	}
-
-	if(count > 0)
-	{
-		return(collisionPoints);
-	}	
-	else
-		return(nullptr);
+	return(false);
 }

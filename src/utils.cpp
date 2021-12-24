@@ -1,14 +1,27 @@
+/**
+ * @file utils.cpp
+ * @brief All definitions of functions in the namespace utils
+ * @see utils.hpp for function documentation
+ * @version 0.1
+ * @date 2021-12-22
+ * 
+ * @copyright Copyright (c) 2021
+ * 
+ */
+
 #define SDL_MAIN_HANDLED
 #include "utils.hpp"
-#include "RenderWindow.hpp"
+
+#include "Camera.hpp"
+#include "Constants.hpp"
 #include "GameObject.hpp"
 #include "Player.hpp"
+#include "RenderWindow.hpp"
 #include "Tiles.hpp"
-#include "Camera.hpp"
-#include "constants.hpp"
+#include <iostream>
+#include <memory>
 #include <SDL.h>
 #include <SDL_image.h>
-#include <iostream>
 #include <vector>
 
 /**
@@ -70,30 +83,56 @@ SDL_Texture* utils::loadTexture(const char* p_filePath, SDL_Renderer* p_renderer
 
 
 /**
- * @sa utils.hpp
- * @sa Test::utils_collision_PointVsRect()
+ * @see Test::utils_collision_PointVsRect()
  */
-
-bool utils::collision_PointVsRect(SDL_FPoint* point, SDL_FRect* rect)
+bool utils::collision_PointVsRect(const SDL_FPoint* point, const SDL_FRect* rect)
 {
-	return(	((point->x > rect->x) && (point->x < (rect->x + rect->w)) 
-			&& (point->y > rect->y) && (point->y < (rect->y + rect->h))) ? true : false	);
+	return(	((point->x >= rect->x) && (point->x <= (rect->x + rect->w)) 
+			&& (point->y >= rect->y) && (point->y <= (rect->y + rect->h))) ? true : false	);
+}
+
+/**
+ * @see Test::utils_getIntersectionCornerFPoints()
+ */
+std::unique_ptr<std::vector<SDL_FPoint>> utils::getIntersectionCornerFPoints(const SDL_FRect* const p_rect1, const SDL_FRect* const p_rect2)
+{
+	if(!p_rect1 || !p_rect2)
+		return nullptr;
+
+	SDL_FPoint rect1Points[4]{	{p_rect1->x, p_rect1->y},
+								{p_rect1->x + p_rect1->w, p_rect1->y},
+								{p_rect1->x + p_rect1->w, p_rect1->y + p_rect1->h},
+								{p_rect1->x, p_rect1->y + p_rect1->h}};
+	
+	SDL_FPoint rect2Points[4]{	{p_rect2->x, p_rect2->y},
+								{p_rect2->x + p_rect2->w, p_rect2->y},
+								{p_rect2->x + p_rect2->w, p_rect2->y + p_rect2->h},
+								{p_rect2->x, p_rect2->y + p_rect2->h}};
+	
+	std::unique_ptr<std::vector<SDL_FPoint>> intersectionCornerFPoints {std::make_unique<std::vector<SDL_FPoint>>()};
+
+	for(const SDL_FPoint& point : rect1Points)
+	{
+		if(utils::collision_PointVsRect(&point, p_rect2))
+			intersectionCornerFPoints->push_back(point);
+	}
+
+	for(const SDL_FPoint& point : rect2Points)
+	{
+		if(utils::collision_PointVsRect(&point, p_rect1))
+			intersectionCornerFPoints->push_back(point);
+	}
+
+	if(intersectionCornerFPoints->empty())
+		return(nullptr);
+
+	return(intersectionCornerFPoints);
 }
 
 
-/**
- * @brief Checks from which direction the collision of two GameObjects is happening and accordingly adjusts the position and the vector of the p_dynamicGameObject
- * 
- * TODO: In mehrere Parts aufteilen damit mehrere Teile des Programms die Funktion besser nutzen können (der Slime z.B.)
- * 
- * @param p_dynamicGameObject GameObject which collides with p_staticGameObject
- * @param p_collisionPoint    Outer Points of the collision rectangle of both GameObjects that that intersect with the collision rectangle of the other GameObject
- * @param p_staticGameObject  GameObject that the p_dynamicGameObject collides with
- * @return Returns a bool. True if the p_dynamicGameObject is on the floor/ground or false if it is not.
- */
-bool utils::resolveCollision(GameObject* p_dynamicGameObject, std::vector<SDL_FPoint>* p_collisionPoints, GameObject* p_staticGameObject)
+bool utils::resolveCollision(GameObject* const p_dynamicGameObject, const std::unique_ptr<std::vector<SDL_FPoint>> p_outerPoints, const GameObject* const p_staticGameObject)
 {
-	if(!p_dynamicGameObject || !p_staticGameObject || !p_collisionPoints)
+	if(!p_dynamicGameObject || !p_outerPoints || !p_staticGameObject)
 	{
 		std::cout << "Error: Call to resolveCollision with nullptr\n";
 		return(false);
@@ -105,127 +144,130 @@ bool utils::resolveCollision(GameObject* p_dynamicGameObject, std::vector<SDL_FP
 	float dOY {p_dynamicGameObject->getY()};
 	int dOW   {p_dynamicGameObject->getW()};
 	int dOH   {p_dynamicGameObject->getH()};
+	const ObjectType* dOType {p_dynamicGameObject->getObjectType()};
 
 	float sOX {p_staticGameObject->getX()};
 	float sOY {p_staticGameObject->getY()};
 	int sOW   {p_staticGameObject->getW()};
 	int sOH   {p_staticGameObject->getH()};
+	const ObjectType* sOType {p_staticGameObject->getObjectType()};
 
 	bool fromAbove{};
 	bool fromLeft{};
 	bool fromBelow{};
 	bool fromRight{};
 
-	float* pP {p_dynamicGameObject->getpP()};
+	const SDL_FPoint* previousPos {p_dynamicGameObject->getPreviousPosition()};
 
-	/* iterates through each collision point and checks the directions from which the dO is colliding with the sO */
+	/* iterates through each outerPoint and checks the directions from which the dO is colliding with the sO */
 
-	for(int i = 0; i < static_cast<int>(p_collisionPoints->size()); ++i)
+	for(const SDL_FPoint& outerPoint : (*p_outerPoints))
 	{
-		if(((*p_collisionPoints)[i].x == dOX) && ((*p_collisionPoints)[i].y == dOY))
+		if((outerPoint.x == dOX) && (outerPoint.y == dOY))
 		{
-			if(pP[1] >= sOY + sOH)
+			if(previousPos->y >= sOY + sOH)
 				fromBelow = true;
 			else
 				fromRight = true;
 		}
-		else if(((*p_collisionPoints)[i].x == dOX + dOW) && ((*p_collisionPoints)[i].y == dOY))  
+		else if((outerPoint.x == dOX + dOW) && (outerPoint.y == dOY))  
 		{
-			if(pP[1] >= sOY + sOH)
+			if(previousPos->y >= sOY + sOH)
 				fromBelow = true;
 			else
 				fromLeft = true;
 		}
-		else if(((*p_collisionPoints)[i].x == dOX) && ((*p_collisionPoints)[i].y == dOY + dOH))
+		else if((outerPoint.x == dOX) && (outerPoint.y == dOY + dOH))
 		{
-			if((pP[1] + dOH) <= sOY)
+			if((previousPos->y + dOH) <= sOY)
 				fromAbove = true;
 			else
 				fromRight = true;
 		}
-		else if(((*p_collisionPoints)[i].x == dOX + dOW) && ((*p_collisionPoints)[i].y == dOY + dOH))
+		else if((outerPoint.x == dOX + dOW) && (outerPoint.y == dOY + dOH))
 		{
-			if((pP[1] + dOH) <= sOY)
+			if((previousPos->y + dOH) <= sOY)
 				fromAbove = true;
 			else
 				fromLeft = true;
 		}
-		else if(((*p_collisionPoints)[i].x == sOX) && ((*p_collisionPoints)[i].y == sOY))
+		else if((outerPoint.x == sOX) && (outerPoint.y == sOY))
 		{
-			if((pP[1] + dOH) <= sOY)
+			if((previousPos->y + dOH) <= sOY)
 				fromAbove = true;
 			else
 				fromLeft = true;
 		}
-		else if(((*p_collisionPoints)[i].x == sOX + sOW) && (*p_collisionPoints)[i].y == sOY)
+		else if((outerPoint.x == sOX + sOW) && outerPoint.y == sOY)
 		{
-			if((pP[1] + dOH) <= sOY)
+			if((previousPos->y + dOH) <= sOY)
 				fromAbove = true;
 			else
 				fromRight = true;
 		}
-		else if(((*p_collisionPoints)[i].x == sOX) && ((*p_collisionPoints)[i].y == sOY + sOH))
+		else if((outerPoint.x == sOX) && (outerPoint.y == sOY + sOH))
 		{
-			if(pP[1] >= sOY + sOH)
+			if(previousPos->y >= sOY + sOH)
 				fromBelow = true;
 			else
 				fromLeft = true;
 		}
-		else if(((*p_collisionPoints)[i].x == sOX + sOW) && ((*p_collisionPoints)[i].y == sOY + sOH))
+		else if((outerPoint.x == sOX + sOW) && (outerPoint.y == sOY + sOH))
 		{
-			if(pP[1] >= sOY + sOH)
+			if(previousPos->y >= sOY + sOH)
 				fromBelow = true;
 			else
 				fromRight = true;
 		}
 		else
 		{
-			std::cout << "Error: CollisionPoint: " << (*p_collisionPoints)[i].x << ',' << (*p_collisionPoints)[i].y << "is not a point of either object that is colliding...\n";
+			std::cout << "Error: CollisionPoint: " << outerPoint.x << ',' << outerPoint.y << "is not a outerPoint of either object that is colliding...\n";
 		}
 	}
+
+	if(*sOType == ObjectType::tile)
+	{
+		if(p_staticGameObject->adjancentTiles[0])
+			fromAbove = false;
+		if(p_staticGameObject->adjancentTiles[1])
+			fromRight = false;
+		if(p_staticGameObject->adjancentTiles[2])
+			fromBelow = false;
+		if(p_staticGameObject->adjancentTiles[3])
+			fromLeft = false;
+	}
+
 
 	/* changes the position of the dO based on the directions it is colliding with the sO */
 
 	if(fromAbove)
 	{
-		//std::cout << "Collision from above\n";
 		p_dynamicGameObject->setVector((p_dynamicGameObject->getVector())[0], 0);
 		p_dynamicGameObject->setY(sOY - dOH);
 		grounded = true;
 	}
 	if(fromRight)
 	{
-		//std::cout << "Collision from right\n";
-		if(p_dynamicGameObject->getObjectType() == ObjectType::slime)
-		{
+		if(*dOType == ObjectType::slime)
 			p_dynamicGameObject->setVector(-1 * (p_dynamicGameObject->getVector())[0], (p_dynamicGameObject->getVector())[1]);
-			p_dynamicGameObject->setX(sOX + sOW + 0.01);
-		}
 		else
-		{
 			p_dynamicGameObject->setVector(0, (p_dynamicGameObject->getVector())[1]);
-			p_dynamicGameObject->setX(sOX + sOW + 0.01);
-		}
+
+		p_dynamicGameObject->setX(sOX + sOW + 0.01);
 	}
 	if(fromBelow)
 	{
-		//std::cout << "Collision from below\n";
 		p_dynamicGameObject->setVector((p_dynamicGameObject->getVector())[0], 0);
 		p_dynamicGameObject->setY(sOY + sOH + 0.01);
 	}
 	if(fromLeft)
 	{
-		//std::cout << "Collision from left\n";
-		if(p_dynamicGameObject->getObjectType() == ObjectType::slime)
-		{
+		if(*dOType == ObjectType::slime)
 			p_dynamicGameObject->setVector(-1 * (p_dynamicGameObject->getVector())[0], (p_dynamicGameObject->getVector())[1]);
-			p_dynamicGameObject->setX(sOX - dOW - 0.01);
-		}
 		else
-		{
 			p_dynamicGameObject->setVector(0, (p_dynamicGameObject->getVector())[1]);
-			p_dynamicGameObject->setX(sOX - dOW - 0.01);
-		}
+		
+		p_dynamicGameObject->setX(sOX - dOW - 0.01);
 	}
 
 	return(grounded);
@@ -242,50 +284,50 @@ bool utils::resolveCollision(GameObject* p_dynamicGameObject, std::vector<SDL_FP
 
 void utils::selectTiles(std::vector<std::vector<Tile*>>& p_tiles)
 {
-	int outerSize {static_cast<int>(p_tiles.size())};
-	int innerSize {static_cast<int>(p_tiles[0].size())};
+	int rowCount {static_cast<int>(p_tiles.size())};
+	int columnCount {static_cast<int>(p_tiles[0].size())};
 
-	for(int i = 0; i < outerSize; ++i)
+	for(int rowIndex = 0; rowIndex < rowCount; ++rowIndex)
 	{
-		for(int j = 0; j < innerSize; ++j)
+		for(int columnIndex = 0; columnIndex < columnCount; ++columnIndex)
 		{
-			if(!p_tiles[i][j])
+			if(!p_tiles[rowIndex][columnIndex])
 			{
 				continue;
 			}
 			
-			bool top {};
-			bool right {};
-			bool below{};
-			bool left {};
+			bool& top {p_tiles[rowIndex][columnIndex]->adjancentTiles[0]};
+			bool& right {p_tiles[rowIndex][columnIndex]->adjancentTiles[1]};
+			bool& below{p_tiles[rowIndex][columnIndex]->adjancentTiles[2]};
+			bool& left {p_tiles[rowIndex][columnIndex]->adjancentTiles[3]};
 
-			if (i > 0)
+			if (rowIndex > 0)
 			{
-				if(p_tiles[i - 1][j])
+				if(p_tiles[rowIndex - 1][columnIndex])
 					top = true;
 			}
 			else
 				top = true;
 
-			if (j < innerSize - 1)
+			if (columnIndex < columnCount - 1)
 			{
-				if(p_tiles[i][j+1])
-				right = true;
+				if(p_tiles[rowIndex][columnIndex+1])
+					right = true;
 			}
 			else
 			 	right = true;
 	
-			if(i < outerSize - 1)
+			if(rowIndex < rowCount - 1)
 			{
-				if(p_tiles[i + 1][j])
-				below = true;
+				if(p_tiles[rowIndex + 1][columnIndex])
+					below = true;
 			}
 			else	
 				below = true;
 
-			if(j > 0)
+			if(columnIndex > 0)
 			{
-				if(p_tiles[i][j - 1])
+				if(p_tiles[rowIndex][columnIndex - 1])
 					left = true;
 			}
 			else 
@@ -293,37 +335,37 @@ void utils::selectTiles(std::vector<std::vector<Tile*>>& p_tiles)
 
 
 			if(top && right && below && left)
-				p_tiles[i][j]->setSrc(utils::createRect(constants::tileSprite::w*3, constants::tileSprite::h*3, constants::tileSprite::w, constants::tileSprite::h));
+				p_tiles[rowIndex][columnIndex]->setSrc(utils::createRect(constants::tileSprite::w*3, constants::tileSprite::h*3, constants::tileSprite::w, constants::tileSprite::h));
 			else if(top && below && left)
-				p_tiles[i][j]->setSrc(utils::createRect(constants::tileSprite::w*2, constants::tileSprite::h*3, constants::tileSprite::w, constants::tileSprite::h));
+				p_tiles[rowIndex][columnIndex]->setSrc(utils::createRect(constants::tileSprite::w*2, constants::tileSprite::h*3, constants::tileSprite::w, constants::tileSprite::h));
 			else if(right && below && left)
-				p_tiles[i][j]->setSrc(utils::createRect(constants::tileSprite::w, constants::tileSprite::h*3, constants::tileSprite::w, constants::tileSprite::h));
+				p_tiles[rowIndex][columnIndex]->setSrc(utils::createRect(constants::tileSprite::w, constants::tileSprite::h*3, constants::tileSprite::w, constants::tileSprite::h));
 			else if(top && right && left)
-				p_tiles[i][j]->setSrc(utils::createRect(0, constants::tileSprite::h*3, constants::tileSprite::w, constants::tileSprite::h));
+				p_tiles[rowIndex][columnIndex]->setSrc(utils::createRect(0, constants::tileSprite::h*3, constants::tileSprite::w, constants::tileSprite::h));
 			else if(top && right && below)
-				p_tiles[i][j]->setSrc(utils::createRect(constants::tileSprite::w*3, constants::tileSprite::h*2, constants::tileSprite::w, constants::tileSprite::h));
+				p_tiles[rowIndex][columnIndex]->setSrc(utils::createRect(constants::tileSprite::w*3, constants::tileSprite::h*2, constants::tileSprite::w, constants::tileSprite::h));
 			else if(below && left)
-				p_tiles[i][j]->setSrc(utils::createRect(constants::tileSprite::w*2, constants::tileSprite::h*2, constants::tileSprite::w, constants::tileSprite::h));
+				p_tiles[rowIndex][columnIndex]->setSrc(utils::createRect(constants::tileSprite::w*2, constants::tileSprite::h*2, constants::tileSprite::w, constants::tileSprite::h));
 			else if(right && left)
-				p_tiles[i][j]->setSrc(utils::createRect(constants::tileSprite::w, constants::tileSprite::h*2, constants::tileSprite::w, constants::tileSprite::h));
+				p_tiles[rowIndex][columnIndex]->setSrc(utils::createRect(constants::tileSprite::w, constants::tileSprite::h*2, constants::tileSprite::w, constants::tileSprite::h));
 			else if(right && below)
-				p_tiles[i][j]->setSrc(utils::createRect(0, constants::tileSprite::h*2, constants::tileSprite::w, constants::tileSprite::h));
+				p_tiles[rowIndex][columnIndex]->setSrc(utils::createRect(0, constants::tileSprite::h*2, constants::tileSprite::w, constants::tileSprite::h));
 			else if(top && left)
-				p_tiles[i][j]->setSrc(utils::createRect(constants::tileSprite::w*3, constants::tileSprite::h, constants::tileSprite::w, constants::tileSprite::h));
+				p_tiles[rowIndex][columnIndex]->setSrc(utils::createRect(constants::tileSprite::w*3, constants::tileSprite::h, constants::tileSprite::w, constants::tileSprite::h));
 			else if(top && below)
-				p_tiles[i][j]->setSrc(utils::createRect(constants::tileSprite::w*2, constants::tileSprite::h, constants::tileSprite::w, constants::tileSprite::h));
+				p_tiles[rowIndex][columnIndex]->setSrc(utils::createRect(constants::tileSprite::w*2, constants::tileSprite::h, constants::tileSprite::w, constants::tileSprite::h));
 			else if(top && right)
-				p_tiles[i][j]->setSrc(utils::createRect(constants::tileSprite::w, constants::tileSprite::h, constants::tileSprite::w, constants::tileSprite::h));
+				p_tiles[rowIndex][columnIndex]->setSrc(utils::createRect(constants::tileSprite::w, constants::tileSprite::h, constants::tileSprite::w, constants::tileSprite::h));
 			else if(left)
-				p_tiles[i][j]->setSrc(utils::createRect(0, constants::tileSprite::h, constants::tileSprite::w, constants::tileSprite::h));
+				p_tiles[rowIndex][columnIndex]->setSrc(utils::createRect(0, constants::tileSprite::h, constants::tileSprite::w, constants::tileSprite::h));
 			else if(below)
-				p_tiles[i][j]->setSrc(utils::createRect(constants::tileSprite::w*3, 0, constants::tileSprite::w, constants::tileSprite::h));
+				p_tiles[rowIndex][columnIndex]->setSrc(utils::createRect(constants::tileSprite::w*3, 0, constants::tileSprite::w, constants::tileSprite::h));
 			else if(right)
-				p_tiles[i][j]->setSrc(utils::createRect(constants::tileSprite::w*2, 0, constants::tileSprite::w, constants::tileSprite::h));
+				p_tiles[rowIndex][columnIndex]->setSrc(utils::createRect(constants::tileSprite::w*2, 0, constants::tileSprite::w, constants::tileSprite::h));
 			else if(top)
-				p_tiles[i][j]->setSrc(utils::createRect(constants::tileSprite::w, 0, constants::tileSprite::w, constants::tileSprite::h));
+				p_tiles[rowIndex][columnIndex]->setSrc(utils::createRect(constants::tileSprite::w, 0, constants::tileSprite::w, constants::tileSprite::h));
 			else	
-				p_tiles[i][j]->setSrc(utils::createRect(0, 0, constants::tileSprite::w, constants::tileSprite::h));
+				p_tiles[rowIndex][columnIndex]->setSrc(utils::createRect(0, 0, constants::tileSprite::w, constants::tileSprite::h));
 		}
 	}
 }

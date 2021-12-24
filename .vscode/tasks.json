@@ -8,6 +8,8 @@
             "type": "shell",
             "command": "g++",
             "args": [
+                "-O0",
+                "-std=c++20",
                 "-o",
                 "C:/C++/JumpyMagician/build/JumpyMagician.exe",
                 "C:/C++/JumpyMagician/src/*.cpp",
