@@ -1,5 +1,6 @@
 #include "Camera.hpp"
 #include "Constants.hpp"
+#include "FrameStatistics.hpp"
 #include "GameObject.hpp"
 #include "Levels.hpp"
 #include "Player.hpp"
@@ -11,6 +12,7 @@
 #include <iostream>
 #include <SDL.h>
 #include <SDL_image.h>
+#include <SDL_timer.h>
 #include <vector>
 
 
@@ -21,11 +23,7 @@
  * ? class for (mathematical) vectors in objects so that you can overload the operators for vector arithmetics ?
  * 
  * !sprites have to be in the bottom left corner !!! is there a fix for this ?
- * 
- * ! @bug one glues to the side of block.... + collision: if standing next to a two tiles tall tile thats not on the ground and pressing a direction you cannot jump
- * !->multiple calls to handleCollision and as return only a point and then resolve one collision after the other??
  *
- * TODO: update documentation of GameObject::handleCollision()
  * TODO: refactor resolveCollision()
  * TODO: make all the functions which return non fundamental times return a pointer
  * TODO: rename private members of a class/struct m_name
@@ -81,18 +79,29 @@ int main(int argc, char* argv[])
 
 
 	SDL_Event event;
-	float elapsedTimeInSeconds {0.0f};
 	int amountOfJumps {constants::maxAmountOfJumps};
 	bool grounded {false};
 	float offsetToApply[2] {0, 0};
+
 	float currentFrameTimeInSeconds{static_cast<float>(SDL_GetTicks())/1000};
 	float previousFrameTimeInSeconds{0.0f};
+	float elapsedTimeInSeconds {0.0f};
+	FrameStatistics frameStatistics;
+
+	std::cout << "Loading time: " << (static_cast<float>(SDL_GetTicks())/1000) << " seconds\n";
 
 	while (gameRunning) 
 	{
 		previousFrameTimeInSeconds = currentFrameTimeInSeconds;
 		currentFrameTimeInSeconds = static_cast<float>(SDL_GetTicks())/1000;
 		elapsedTimeInSeconds = currentFrameTimeInSeconds - previousFrameTimeInSeconds; 
+
+		frameStatistics.addFrameTime(elapsedTimeInSeconds);
+		if(frameStatistics.getNumberOfFrameTimes() > 100)
+		{
+			frameStatistics.printAverageFrameTime();
+			frameStatistics.reset();
+		}
 
 		while (SDL_PollEvent(&event)) {
 			switch (event.type)
@@ -189,6 +198,8 @@ int main(int argc, char* argv[])
 
 		window.display();
 	}
+
+	frameStatistics.printAverageFrameTime();
 
 	window.cleanup();
 	SDL_Quit();

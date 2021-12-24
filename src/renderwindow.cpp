@@ -1,5 +1,7 @@
 #include "RenderWindow.hpp"
+
 #include "GameObject.hpp"
+#include "utils.hpp"
 #include <SDL.h>
 #include <iostream>
 
@@ -8,13 +10,13 @@ RenderWindow::RenderWindow()
 
 
 RenderWindow::RenderWindow(const char* p_title, int p_w, int p_h)
-	:window(nullptr), renderer(nullptr)
+	:m_window(nullptr), renderer(nullptr)
 {
-	window = SDL_CreateWindow(p_title, SDL_WINDOWPOS_UNDEFINED, SDL_WINDOWPOS_UNDEFINED, p_w, p_h, SDL_WINDOW_SHOWN); //|| SDL_WINDOW_FULLSCREEN);
-	if (!window)
+	m_window = SDL_CreateWindow(p_title, SDL_WINDOWPOS_UNDEFINED, SDL_WINDOWPOS_UNDEFINED, p_w, p_h, SDL_WINDOW_SHOWN); //|| SDL_WINDOW_FULLSCREEN);
+	if (!m_window)
 		std::cout << "Window failed to initialize. Error: " << SDL_GetError() << std::endl;
 	
-	renderer = SDL_CreateRenderer(window, -1, SDL_RENDERER_ACCELERATED);
+	renderer = SDL_CreateRenderer(m_window, -1, SDL_RENDERER_ACCELERATED);
 	if (!renderer)
 		std::cout << "Renderer failed to initialize. Error: " << SDL_GetError() << std::endl;
 }
@@ -28,6 +30,9 @@ SDL_Renderer* RenderWindow::getRenderer()
 
 void RenderWindow::render(GameObject* p_object) 
 {
+	if(!utils::isInWindow(p_object))
+		return;
+
 	SDL_Texture* tex {nullptr};
 	tex = p_object->getTexture();
 	
@@ -54,6 +59,6 @@ void RenderWindow::clear()
 
 void RenderWindow::cleanup() 
 {
-	SDL_DestroyWindow(window);
+	SDL_DestroyWindow(m_window);
 	SDL_DestroyRenderer(renderer);
 }

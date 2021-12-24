@@ -369,3 +369,26 @@ void utils::selectTiles(std::vector<std::vector<Tile*>>& p_tiles)
 		}
 	}
 }
+
+
+
+bool utils::isInWindow(const GameObject* p_gameObject)
+{
+	if(!p_gameObject)
+		return false;
+
+	return(!((p_gameObject->getX() > constants::window::w) || (p_gameObject->getX() < -constants::largestSpriteWidth) 
+			  || (p_gameObject->getY() > constants::window::h) || (p_gameObject->getY() < -constants::largestSpriteHeight)));
+}
+
+
+
+bool utils::hasIntersection(const SDL_FRect* p_object1, const SDL_FRect* p_possiblyNear)
+{
+	if(!p_object1 || !p_possiblyNear)
+		return false;
+
+	
+
+	return(false);
+}

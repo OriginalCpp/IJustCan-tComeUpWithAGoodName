@@ -4,7 +4,7 @@
 
 class RenderWindow 
 {
-	SDL_Window* window {nullptr};
+	SDL_Window* m_window {nullptr};
 	SDL_Renderer* renderer {nullptr};
 
 public:

@@ -36,10 +36,13 @@ namespace constants
         constexpr int h {256};
     }
 
-    constexpr int maxAmountOfJumps {1};
-
     constexpr int scale {4};
 
+    /* Except the player! */
+    constexpr int largestSpriteWidth {tileSprite::w*scale};
+    constexpr int largestSpriteHeight {tileSprite::h*scale};
+
+    constexpr int maxAmountOfJumps {1};
     constexpr int normalPlayerSpeed {400};
 
     /* The player can jump 3 tiles high and 4 tiles wide*/

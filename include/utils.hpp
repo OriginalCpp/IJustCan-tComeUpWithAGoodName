@@ -5,6 +5,7 @@
 #include "RenderWindow.hpp"
 #include "Tiles.hpp"
 #include <memory>
+#include <numeric>
 #include <SDL.h>
 #include <vector>
 
@@ -58,8 +59,23 @@ namespace utils
  	*/
 	bool resolveCollision(GameObject* const p_dynamicGameObject, const std::unique_ptr<std::vector<SDL_FPoint>> p_outerPoints, const GameObject* const p_staticGameObject);
 
-
-
-
 	void selectTiles(std::vector<std::vector<Tile*>>& p_tiles);
+
+	/* 
+	Checks if a GameObject is in the window.
+	Remarks: Also checks wether the pointer is a nullptr or not.
+
+	\param p_gameObject
+	\returns True if the Object is in the window, false otherwise.
+	*/
+	bool isInWindow(const GameObject* p_gameObject);
+
+	/*
+	Checks two SDL_FRect intersect with each other or not.
+
+	\param p_rect1
+	\param p_rect2
+	\returns True if the rectangles intersect, false otherwise.
+	*/
+	bool hasIntersection(const SDL_FRect* p_rect1, const SDL_FRect* );
 }

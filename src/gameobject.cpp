@@ -167,8 +167,15 @@ const ObjectType* GameObject::getObjectType() const
 
 bool GameObject::handleCollision(const GameObject* const p_otherGameObject)
 {
-	if(!p_otherGameObject)
-		return (false);
+	if(m_objectType == ObjectType::player)
+	{
+		if(!utils::isInWindow(p_otherGameObject))
+			return false;
+	}
+	else if(!p_otherGameObject)
+		return false;
+
+	
 
 	std::unique_ptr<std::vector<SDL_FPoint>> cornerPoints {utils::getIntersectionCornerFPoints(&m_hitbox, p_otherGameObject->getHitBox())};
 
@@ -179,8 +186,8 @@ bool GameObject::handleCollision(const GameObject* const p_otherGameObject)
 		if (utils::resolveCollision(this, std::move(cornerPoints), p_otherGameObject))
 			grounded = true;
 
-		return(grounded);
+		return grounded;
 	}
 
-	return(false);
+	return false;
 }

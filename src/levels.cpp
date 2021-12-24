@@ -36,7 +36,7 @@ std::vector<std::vector<Tile*>>* levels::setUpLevel(int p_level, SDL_Renderer* p
 std::vector<std::vector<Tile*>>* levels::setUpLevel1(SDL_Renderer* p_renderer)
 {
 	int rows {constants::window::h/(constants::tileSprite::h*constants::scale)};
-	int columns {2*(constants::window::w/(constants::tileSprite::w*constants::scale))};
+	int columns {6*(constants::window::w/(constants::tileSprite::w*constants::scale))};
 
 	std::vector<std::vector<Tile*>>* tiles = new std::vector<std::vector<Tile*>>(rows, std::vector<Tile*>(columns, nullptr));
 
