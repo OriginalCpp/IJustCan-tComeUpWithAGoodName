@@ -14,23 +14,31 @@
 /* A class that manages frame times (in seconds) to create statistics*/
 class FrameStatistics
 {
-    /* Holds the FrameTimes of multiple frames (in seconds). */
-    std::vector<float> m_FrameTimes;
-
 public:
 
     FrameStatistics();
 
-    /* Adds a frameTime to m_FrameTimes. */
-    void addFrameTime(float p_frameTime);
+    /* 
+    Adds a frame time.
+    
+    \param p_frameTimeInSeconds The frame time to add in seconds
+    */
+    void addFrameTime(float p_frameTimeInSeconds);
 
-    /* Get the number of elements inside m_FrameTimes */
+    /* Get the number of frame times currently recorded. */
     int getNumberOfFrameTimes() const;
 
-    /* Print the average frame time (arithmetic mean). */
+    /* 
+    Print the average frame time. 
+    Remarks: Uses arithmetic mean. 
+    */
     void printAverageFrameTime() const;
 
-    /* Deletes all elements of m_FrameTimes */
+    /* Deletes all frame times currently recorded. */
     void reset();
 
+private:
+
+    /* Holds the FrameTimes of multiple frames (in seconds). */
+    std::vector<float> m_FrameTimesInSeconds;
 };

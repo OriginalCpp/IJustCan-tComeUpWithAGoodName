@@ -1,6 +1,6 @@
 /**
  * @file tests.cpp
- * @brief All definitions of functions in namespace "Test".
+ * @brief Definitions of all functions in the namespace "test".
  * @sa Tests.hpp for function documentation.
  * @version 0.1
  * @date 2021-12-22
@@ -10,16 +10,15 @@
  */
 
 #include "Tests.hpp"
-#include "utils.hpp"
+
 #include "GameObject.hpp"
+#include "Utils.hpp"
+#include <iostream>
 #include <memory>
 #include <SDL.h>
 #include <vector>
-#include <iostream>
 
-
-
-void Test::utils_collision_PointVsRect()
+void test::utils_collision_PointVsRect()
 {
     std::cout << "\nTest::utils_collision_PointVsRect():\n";
     std::string testResult{""};
@@ -45,7 +44,7 @@ void Test::utils_collision_PointVsRect()
 
 
 
-void Test::utils_getIntersectionCornerFPoints()
+void test::utils_getIntersectionCornerFPoints()
 {
     std::cout << "\nTest::utils_getIntersectionCornerFPoints():\n";
     std::string testResult {""};
@@ -109,7 +108,7 @@ void Test::utils_getIntersectionCornerFPoints()
 
 
 
-void Test::GameObject_Constructor(SDL_Renderer* p_renderer)
+void test::GameObject_Constructor(SDL_Renderer* p_renderer)
 {
     std::cout << "\nTest::GameObject_Constructor():\n";
     std::string testResult {""};
@@ -140,7 +139,7 @@ void Test::GameObject_Constructor(SDL_Renderer* p_renderer)
 
 
 
-void Test::GameObject_setXgetX(SDL_Renderer* p_renderer)
+void test::GameObject_setXgetX(SDL_Renderer* p_renderer)
 {
     std::cout << "\nTest::GameObject_setX():\n";
     std::string testResult {""};

@@ -11,7 +11,7 @@
 #include "FrameStatistics.hpp"
 
 #include "Templates.hpp"
-#include "utils.hpp"
+#include "Utils.hpp"
 #include <iostream>
 #include <vector>
 
@@ -19,21 +19,21 @@ FrameStatistics::FrameStatistics(){}
 
 void FrameStatistics::addFrameTime(float p_frameTime)
 {
-    m_FrameTimes.push_back(p_frameTime);
+    m_FrameTimesInSeconds.push_back(p_frameTime);
 }
 
 int FrameStatistics::getNumberOfFrameTimes() const
 {
-    return static_cast<int>(m_FrameTimes.size());
+    return static_cast<int>(m_FrameTimesInSeconds.size());
 }
 
 void FrameStatistics::printAverageFrameTime() const
 {
-    float average = Template::calculateAverage(m_FrameTimes);
+    float average = Template::calculateAverage(m_FrameTimesInSeconds);
     std::cout << "Average frame time is " << average << "seconds\nThis corresponds to " << (1/average) << "frames per second!\n";
 }
 
 void FrameStatistics::reset()
 {
-    m_FrameTimes.clear();
+    m_FrameTimesInSeconds.clear();
 }

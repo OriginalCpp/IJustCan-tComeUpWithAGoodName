@@ -10,7 +10,7 @@
 
 #include "GameObject.hpp"
 
-#include "utils.hpp"
+#include "Utils.hpp"
 #include <iostream>
 #include <memory>
 #include <SDL.h>
@@ -22,30 +22,19 @@ GameObject::GameObject(){}
 
 
 GameObject::GameObject(SDL_Texture* p_texture, SDL_Rect p_srcRect, SDL_Rect p_dstRect, SDL_FRect p_hitbox)
-	:m_texture{p_texture}, m_srcRect{p_srcRect}, m_dstRect{p_dstRect} 
+	:m_texture{p_texture}, m_srcRect{p_srcRect}, m_dstRect{p_dstRect}, m_hitbox{p_hitbox}
 {
 	if((!p_hitbox.w) || (!p_hitbox.h))
 	{
-		m_pos->x = p_dstRect.x;
-		m_pos->y = p_dstRect.y;
-
-		m_hitbox.x = p_dstRect.x;
-		m_hitbox.y = p_dstRect.y;
 		m_hitbox.w = p_dstRect.w;
-		m_hitbox.h = p_dstRect.h;
+		m_hitbox.h = p_dstRect.h;	
 	}
-	else
-	{
-		m_hitbox.x = p_dstRect.x;
-		m_pos->x = m_hitbox.x;
-		m_hitbox.y = p_dstRect.y + (p_dstRect.h - p_hitbox.h);
-		m_pos->y = m_hitbox.y;
-
-		m_hitbox.w = p_hitbox.w;
-		m_hitbox.h = p_hitbox.h;
-	}
+	setX(p_dstRect.x);
+	setY(p_dstRect.y);
 }
 
+GameObject::~GameObject()
+{}
 
 
 SDL_Texture* GameObject::getTexture() const
@@ -106,23 +95,11 @@ const SDL_FPoint* GameObject::getPosition() const
 	return m_pos;
 }
 
-const SDL_FPoint* GameObject::getPreviousPosition() const
+void GameObject::setPosition(const SDL_FPoint* p_position)
 {
-	return m_previousPos;
+	setX(p_position->x);
+	setY(p_position->y);
 }
-
-const float* GameObject::getVector() const
-{
-	return(m_vector);
-}
-
-void GameObject::setVector(float p_x, float p_y) 
-{
-	m_vector[0] = p_x;
-	m_vector[1] = p_y;
-}
-
-
 
 
 const SDL_Rect* GameObject::getSrc() const
@@ -158,36 +135,16 @@ void GameObject::setFlip(SDL_RendererFlip p_flip)
 	m_flipFlag = p_flip;
 }
 
-const ObjectType* GameObject::getObjectType() const
+
+
+const ObjectType GameObject::getObjectType() const
 {
-	return &m_objectType;
+	return m_objectType;
+}
+
+void GameObject::setObjectType(ObjectType p_objectType) 
+{
+	m_objectType = p_objectType;
 }
 
 
-
-bool GameObject::handleCollision(const GameObject* const p_otherGameObject)
-{
-	if(m_objectType == ObjectType::player)
-	{
-		if(!utils::isInWindow(p_otherGameObject))
-			return false;
-	}
-	else if(!p_otherGameObject)
-		return false;
-
-	
-
-	std::unique_ptr<std::vector<SDL_FPoint>> cornerPoints {utils::getIntersectionCornerFPoints(&m_hitbox, p_otherGameObject->getHitBox())};
-
-	if(cornerPoints)
-	{
-		bool grounded {false};
-
-		if (utils::resolveCollision(this, std::move(cornerPoints), p_otherGameObject))
-			grounded = true;
-
-		return grounded;
-	}
-
-	return false;
-}

@@ -12,6 +12,8 @@
 
 namespace constants
 {
+    constexpr int scale {4};
+
     namespace playerSprite
     {
         constexpr int w {16};
@@ -21,7 +23,17 @@ namespace constants
     namespace tileSprite
     {
         constexpr int w {16};
+        constexpr int wScaled {w*scale};
         constexpr int h {16};
+        constexpr int hScaled {h*scale};
+    }
+
+    namespace slimeSprite
+    {
+        constexpr int w {16};
+        constexpr int wScaled {w*scale};
+        constexpr int h {16};
+        constexpr int hScaled {h*scale};
     }
 
     namespace window
@@ -35,8 +47,6 @@ namespace constants
         constexpr int w {256};
         constexpr int h {256};
     }
-
-    constexpr int scale {4};
 
     /* Except the player! */
     constexpr int largestSpriteWidth {tileSprite::w*scale};

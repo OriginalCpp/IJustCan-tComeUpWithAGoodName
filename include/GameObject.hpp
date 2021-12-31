@@ -9,16 +9,11 @@
  */
 
 #pragma once
+
+#include "ObjectType.hpp"
 #include <SDL.h>
 #include <vector>
 
-enum class ObjectType
-{
-	none,
-	tile,
-	player,
-	slime,
-};
 
 /**
  * @brief A class to represent any object in the Game
@@ -30,10 +25,10 @@ public:
 	/*
 	Construct a new GameObject. Set texture, position and hitbox.
 
-	Remarks: If no p_hitbox is provided then the hitbox will have the same size as p_dst. Only the width and the height of p_hitbox are considerer.
+	Remarks: If no p_hitbox is provided then the hitbox will have the same size as p_dst. Only the width and the height of p_hitbox are considered.
 			 The Position of an object is relative to p_dst.x and p_dst.y. Has a test function.
 
-	See: Test::GameObject_Constructor()
+	See: test::GameObject_Constructor()
 
 	\param p_texture
 	\param p_src
@@ -42,13 +37,15 @@ public:
 	*/
 	GameObject(SDL_Texture* p_texture, SDL_Rect p_src, SDL_Rect p_dst, SDL_FRect p_hitbox = {0, 0, 0, 0});
 
+	virtual ~GameObject();
+
 	SDL_Texture* getTexture() const;
 	void setTexture(SDL_Texture* p_tex);
 	
 	/**
 	 * @brief Has a test function.
 	 * 
-	 * @sa Test::GameObject_setXgetX()
+	 * @sa test::GameObject_setXgetX()
 	 */
 	float getX() const;
 	void setX(float p_x);
@@ -60,9 +57,7 @@ public:
 	int getH() const;
 
 	const SDL_FPoint* getPosition() const;
-	const SDL_FPoint* getPreviousPosition() const;
-	const float* getVector() const;
-	void setVector(float p_x, float p_y);
+	void setPosition(const SDL_FPoint* p_position);
 
 	const SDL_Rect* getSrc() const;
 	void setSrc(SDL_Rect p_src);
@@ -72,16 +67,9 @@ public:
 
 	const SDL_RendererFlip* getFlip() const;
 	void setFlip(SDL_RendererFlip p_flip);
-	const ObjectType* getObjectType() const;
-	
-	/*
-	Detects wether a collision between THIS GameObject and p_otherGameObject is happening or not and then handle/resolves the collision.
-	Remarks: This function only changes the position of THIS GameObject in order to resolve the collision!
 
-	\param p_otherGameObject
-	\return Returns true if THIS GameObject is on the floor/ground, returns false otherwise.
-	*/
-	bool handleCollision(const GameObject* const p_otherGameObject);
+	const ObjectType getObjectType() const;
+	void setObjectType(ObjectType p_objectType);
 
 	/*
     True = has adjancent tile in given direction, false = has no adjancent tile in given direction.
@@ -90,13 +78,11 @@ public:
     */
     bool adjancentTiles[4] = {false, false, false, false};
 	
-protected:
+private:
 
 	SDL_Texture* m_texture {nullptr};
 
 	SDL_FPoint m_pos[2] {0, 0};
-	SDL_FPoint m_previousPos[2] {0, 0};
-	float m_vector[2] = {0, 0};
 
 	SDL_Rect m_srcRect {0, 0, 0, 0};
 	SDL_Rect m_dstRect {0, 0, 0, 0};

@@ -1,7 +1,7 @@
 /**
  * @file utils.cpp
- * @brief All definitions of functions in the namespace utils
- * @see utils.hpp for function documentation
+ * @brief Definitions of all functions in the namespace "utils".
+ * @see Utils.hpp for function documentation.
  * @version 0.1
  * @date 2021-12-22
  * 
@@ -10,18 +10,20 @@
  */
 
 #define SDL_MAIN_HANDLED
-#include "utils.hpp"
+#include "Utils.hpp"
 
 #include "Camera.hpp"
-#include "Constants.hpp"
 #include "GameObject.hpp"
+#include "Constants.hpp"
+#include "KeyboardState.hpp"
 #include "Player.hpp"
 #include "RenderWindow.hpp"
-#include "Tiles.hpp"
+#include "Tile.hpp"
 #include <iostream>
 #include <memory>
 #include <SDL.h>
 #include <SDL_image.h>
+#include <string>
 #include <vector>
 
 /**
@@ -74,16 +76,20 @@ SDL_Texture* utils::loadTexture(const char* p_filePath, SDL_Renderer* p_renderer
 {
 	SDL_Texture* texture {nullptr};
 	texture = IMG_LoadTexture(p_renderer, p_filePath);
+
 	if (!texture)
-		std::cout << "Could not load Texture. Error: " << SDL_GetError() << std::endl;
-	else
-		std::cout << "Texture loaded: " << p_filePath << std::endl;
+	{
+		std::string error {"FAILED_TO_LOAD_TEXTURE"};
+		error.append(SDL_GetError());
+		throw error;
+	}
+
 	return(texture);
 }
 
 
 /**
- * @see Test::utils_collision_PointVsRect()
+ * @see test::utils_collision_PointVsRect()
  */
 bool utils::collision_PointVsRect(const SDL_FPoint* point, const SDL_FRect* rect)
 {
@@ -92,7 +98,7 @@ bool utils::collision_PointVsRect(const SDL_FPoint* point, const SDL_FRect* rect
 }
 
 /**
- * @see Test::utils_getIntersectionCornerFPoints()
+ * @see test::utils_getIntersectionCornerFPoints()
  */
 std::unique_ptr<std::vector<SDL_FPoint>> utils::getIntersectionCornerFPoints(const SDL_FRect* const p_rect1, const SDL_FRect* const p_rect2)
 {
@@ -130,152 +136,6 @@ std::unique_ptr<std::vector<SDL_FPoint>> utils::getIntersectionCornerFPoints(con
 }
 
 
-bool utils::resolveCollision(GameObject* const p_dynamicGameObject, const std::unique_ptr<std::vector<SDL_FPoint>> p_outerPoints, const GameObject* const p_staticGameObject)
-{
-	if(!p_dynamicGameObject || !p_outerPoints || !p_staticGameObject)
-	{
-		std::cout << "Error: Call to resolveCollision with nullptr\n";
-		return(false);
-	}
-
-	bool grounded {false};
-
-	float dOX {p_dynamicGameObject->getX()};
-	float dOY {p_dynamicGameObject->getY()};
-	int dOW   {p_dynamicGameObject->getW()};
-	int dOH   {p_dynamicGameObject->getH()};
-	const ObjectType* dOType {p_dynamicGameObject->getObjectType()};
-
-	float sOX {p_staticGameObject->getX()};
-	float sOY {p_staticGameObject->getY()};
-	int sOW   {p_staticGameObject->getW()};
-	int sOH   {p_staticGameObject->getH()};
-	const ObjectType* sOType {p_staticGameObject->getObjectType()};
-
-	bool fromAbove{};
-	bool fromLeft{};
-	bool fromBelow{};
-	bool fromRight{};
-
-	const SDL_FPoint* previousPos {p_dynamicGameObject->getPreviousPosition()};
-
-	/* iterates through each outerPoint and checks the directions from which the dO is colliding with the sO */
-
-	for(const SDL_FPoint& outerPoint : (*p_outerPoints))
-	{
-		if((outerPoint.x == dOX) && (outerPoint.y == dOY))
-		{
-			if(previousPos->y >= sOY + sOH)
-				fromBelow = true;
-			else
-				fromRight = true;
-		}
-		else if((outerPoint.x == dOX + dOW) && (outerPoint.y == dOY))  
-		{
-			if(previousPos->y >= sOY + sOH)
-				fromBelow = true;
-			else
-				fromLeft = true;
-		}
-		else if((outerPoint.x == dOX) && (outerPoint.y == dOY + dOH))
-		{
-			if((previousPos->y + dOH) <= sOY)
-				fromAbove = true;
-			else
-				fromRight = true;
-		}
-		else if((outerPoint.x == dOX + dOW) && (outerPoint.y == dOY + dOH))
-		{
-			if((previousPos->y + dOH) <= sOY)
-				fromAbove = true;
-			else
-				fromLeft = true;
-		}
-		else if((outerPoint.x == sOX) && (outerPoint.y == sOY))
-		{
-			if((previousPos->y + dOH) <= sOY)
-				fromAbove = true;
-			else
-				fromLeft = true;
-		}
-		else if((outerPoint.x == sOX + sOW) && outerPoint.y == sOY)
-		{
-			if((previousPos->y + dOH) <= sOY)
-				fromAbove = true;
-			else
-				fromRight = true;
-		}
-		else if((outerPoint.x == sOX) && (outerPoint.y == sOY + sOH))
-		{
-			if(previousPos->y >= sOY + sOH)
-				fromBelow = true;
-			else
-				fromLeft = true;
-		}
-		else if((outerPoint.x == sOX + sOW) && (outerPoint.y == sOY + sOH))
-		{
-			if(previousPos->y >= sOY + sOH)
-				fromBelow = true;
-			else
-				fromRight = true;
-		}
-		else
-		{
-			std::cout << "Error: CollisionPoint: " << outerPoint.x << ',' << outerPoint.y << "is not a outerPoint of either object that is colliding...\n";
-		}
-	}
-
-	if(*sOType == ObjectType::tile)
-	{
-		if(p_staticGameObject->adjancentTiles[0])
-			fromAbove = false;
-		if(p_staticGameObject->adjancentTiles[1])
-			fromRight = false;
-		if(p_staticGameObject->adjancentTiles[2])
-			fromBelow = false;
-		if(p_staticGameObject->adjancentTiles[3])
-			fromLeft = false;
-	}
-
-
-	/* changes the position of the dO based on the directions it is colliding with the sO */
-
-	if(fromAbove)
-	{
-		p_dynamicGameObject->setVector((p_dynamicGameObject->getVector())[0], 0);
-		p_dynamicGameObject->setY(sOY - dOH);
-		grounded = true;
-	}
-	if(fromRight)
-	{
-		if(*dOType == ObjectType::slime)
-			p_dynamicGameObject->setVector(-1 * (p_dynamicGameObject->getVector())[0], (p_dynamicGameObject->getVector())[1]);
-		else
-			p_dynamicGameObject->setVector(0, (p_dynamicGameObject->getVector())[1]);
-
-		p_dynamicGameObject->setX(sOX + sOW + 0.01);
-	}
-	if(fromBelow)
-	{
-		p_dynamicGameObject->setVector((p_dynamicGameObject->getVector())[0], 0);
-		p_dynamicGameObject->setY(sOY + sOH + 0.01);
-	}
-	if(fromLeft)
-	{
-		if(*dOType == ObjectType::slime)
-			p_dynamicGameObject->setVector(-1 * (p_dynamicGameObject->getVector())[0], (p_dynamicGameObject->getVector())[1]);
-		else
-			p_dynamicGameObject->setVector(0, (p_dynamicGameObject->getVector())[1]);
-		
-		p_dynamicGameObject->setX(sOX - dOW - 0.01);
-	}
-
-	return(grounded);
-}
-
-
-
-
 /**
  * @brief checks for each tile for adjancent tiles and then sets the texture(s) so that the tiles match
  * 
@@ -292,9 +152,7 @@ void utils::selectTiles(std::vector<std::vector<Tile*>>& p_tiles)
 		for(int columnIndex = 0; columnIndex < columnCount; ++columnIndex)
 		{
 			if(!p_tiles[rowIndex][columnIndex])
-			{
 				continue;
-			}
 			
 			bool& top {p_tiles[rowIndex][columnIndex]->adjancentTiles[0]};
 			bool& right {p_tiles[rowIndex][columnIndex]->adjancentTiles[1]};
@@ -311,7 +169,7 @@ void utils::selectTiles(std::vector<std::vector<Tile*>>& p_tiles)
 
 			if (columnIndex < columnCount - 1)
 			{
-				if(p_tiles[rowIndex][columnIndex+1])
+				if(p_tiles[rowIndex][columnIndex + 1])
 					right = true;
 			}
 			else
@@ -378,17 +236,5 @@ bool utils::isInWindow(const GameObject* p_gameObject)
 		return false;
 
 	return(!((p_gameObject->getX() > constants::window::w) || (p_gameObject->getX() < -constants::largestSpriteWidth) 
-			  || (p_gameObject->getY() > constants::window::h) || (p_gameObject->getY() < -constants::largestSpriteHeight)));
-}
-
-
-
-bool utils::hasIntersection(const SDL_FRect* p_object1, const SDL_FRect* p_possiblyNear)
-{
-	if(!p_object1 || !p_possiblyNear)
-		return false;
-
-	
-
-	return(false);
+			|| (p_gameObject->getY() > constants::window::h) || (p_gameObject->getY() < -constants::largestSpriteHeight)));
 }

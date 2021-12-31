@@ -11,8 +11,6 @@
 #pragma once
 #include "GameObject.hpp"
 #include <SDL.h>
-#include <vector>
-
 
 
 /*A camera that can track one object at a time.*/
@@ -23,15 +21,19 @@ public:
     /* 
     \param p_margin Represents the area in which the m_objectToTrack will be kept in by the camera.
     \param p_object The GameObject which shall be tracked by the camera.
-    \param p_isTracking Starting tracking state of the camera. The tracking state can be changed later with Camera::hasToTrack()
+    \param p_isTracking Starting tracking state of the camera.
     */
     Camera(SDL_FRect p_margin, GameObject* p_object, bool p_isTracking = false);
 
     /*
     Checks wether the m_objectToTrack has entered m_margin or not. 
-    If yes sets m_isTracking to true, otherwise to false.
     */
-    void hasToTrack();
+    bool hasToTrack() const;
+
+    /*
+    Set m_isTracking to true, the Camera now tracks m_objectToTrack.
+    */
+    void beginToTrack();
 
     /*
     Calculate the offset that has to be made to keep the m_objectToTrack in m_margin.
@@ -50,5 +52,4 @@ private:
 
     /*Tracking state of the camera, only tracks the m_objectToTrack if this is true.*/
     bool m_isTracking {false};
-
 };

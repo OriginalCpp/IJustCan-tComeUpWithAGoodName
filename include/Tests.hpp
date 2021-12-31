@@ -1,7 +1,17 @@
+/**
+ * @file Tests.hpp
+ * @brief All test functions.
+ * @version 0.1
+ * @date 2021-12-26
+ * 
+ * @copyright Copyright (c) 2021
+ * 
+ */
 #pragma once
+
 #include <SDL.h>
 
-namespace Test
+namespace test
 {
     /**
      * @brief Test utils::collision_PointVsRect().

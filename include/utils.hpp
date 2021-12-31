@@ -1,9 +1,21 @@
+/**
+ * @file Utils.hpp
+ * @brief All utility functions.
+ * @version 0.1
+ * @date 2021-12-26
+ * 
+ * @copyright Copyright (c) 2021
+ * 
+ */
 #pragma once
+
 #include "Camera.hpp"
+#include "DynamicGameObject.hpp"
 #include "GameObject.hpp"
+#include "GameState.hpp"
 #include "Player.hpp"
 #include "RenderWindow.hpp"
-#include "Tiles.hpp"
+#include "Tile.hpp"
 #include <memory>
 #include <numeric>
 #include <SDL.h>
@@ -12,7 +24,6 @@
 
 namespace utils 
 {
-	
 	/**
 	 * @brief Initializes SDL's video subsystem and the PNG library of SDL_image
 	 * 
@@ -27,7 +38,7 @@ namespace utils
 	/**
  	* @brief Checks if a SDL_FPoint is in a SDL_FRect. Has a test function.
  	*
-	* @see Test::utils_collision_PointVsRect() 
+	* @see test::utils_collision_PointVsRect() 
 	*
  	* @param point
  	* @param rect 
@@ -38,7 +49,7 @@ namespace utils
 	/**
 	 * @brief Get the corners of p_rect1 and p_rect2 that reside inside each other. Remarks: Has a test function.
 	 * 
-	 * @see Test::utils_getIntersectionCornerFPoints()
+	 * @see test::utils_getIntersectionCornerFPoints()
 	 * 
 	 * @param p_rect1 
 	 * @param p_rect2 
@@ -57,7 +68,9 @@ namespace utils
  	* @param p_staticGameObject  GameObject that the p_dynamicGameObject collides with
  	* @return Returns true if the p_dynamicGameObject is on the floor/ground, otherwise false.
  	*/
-	bool resolveCollision(GameObject* const p_dynamicGameObject, const std::unique_ptr<std::vector<SDL_FPoint>> p_outerPoints, const GameObject* const p_staticGameObject);
+	void resolveCollision(DynamicGameObject* const p_dynamicGameObject, const std::vector<SDL_FPoint>* const p_outerPoints, GameObject* const p_staticGameObject);
+
+	void resolveCollision(DynamicGameObject* const p_dynamicGameObject, const std::vector<SDL_FPoint>* const p_outerPoints, DynamicGameObject* const p_staticGameObject);
 
 	void selectTiles(std::vector<std::vector<Tile*>>& p_tiles);
 
@@ -69,13 +82,4 @@ namespace utils
 	\returns True if the Object is in the window, false otherwise.
 	*/
 	bool isInWindow(const GameObject* p_gameObject);
-
-	/*
-	Checks two SDL_FRect intersect with each other or not.
-
-	\param p_rect1
-	\param p_rect2
-	\returns True if the rectangles intersect, false otherwise.
-	*/
-	bool hasIntersection(const SDL_FRect* p_rect1, const SDL_FRect* );
 }

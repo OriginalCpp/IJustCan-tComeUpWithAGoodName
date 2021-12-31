@@ -15,7 +15,7 @@
 
 namespace Template
 {
-    /* calculates the average using the arithmetic mean */
+    /* Calculates the average value contained in a vector using the arithmetic mean. */
 	template <typename T>
 	inline float calculateAverage(const std::vector<T>& p_vector)
 	{
@@ -27,6 +27,6 @@ namespace Template
 
 		const int numberOfElements {static_cast<int>(p_vector.size())};
 
-		return std::reduce(p_vector.begin(), p_vector.end())/numberOfElements;
+		return std::reduce(p_vector.begin(), p_vector.end()) / numberOfElements;
 	}
 }
