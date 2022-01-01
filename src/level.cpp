@@ -68,6 +68,8 @@ void Level::setUpLevel(int p_level)
 
 void Level::setUpLevel1()
 {
+	m_background = utils::loadTexture("../res/backgrounds/defaultbg.png", m_windowToRenderTo.getRenderer());
+
 	std::ifstream level1;
 	level1.open("../res/levels/level1.txt", std::ios::in);
 
@@ -75,14 +77,14 @@ void Level::setUpLevel1()
 
 	SDL_Rect playerSrcRect {0, 0, constants::playerSprite::w, constants::playerSprite::h};
 	SDL_Rect playerDstRect {100, 100, playerSrcRect.w*constants::scale, playerSrcRect.h*constants::scale};
-	SDL_Texture* playerTexture{utils::loadTexture("../res/player/MCSpriteSheet.png", m_windowToRenderTo.getRenderer())};
+	SDL_Texture* playerTexture{utils::loadTexture("../res/player/Maincharacter.png", m_windowToRenderTo.getRenderer())};
 	m_player = new Player(playerTexture, playerSrcRect, playerDstRect);
 
 	m_camera = new Camera(utils::createFRect((constants::window::w/2) - (constants::camera::w/2), 10*constants::scale*constants::tileSprite::h - constants::camera::h, 
 				  		  constants::camera::w, constants::camera::h), m_player);
 
 
-	SDL_Texture* tileTexture = utils::loadTexture("../res/tileset/sortedTileset.png", m_windowToRenderTo.getRenderer());
+	SDL_Texture* tileTexture = utils::loadTexture("../res/tileset/outlinedSortedTileset.png", m_windowToRenderTo.getRenderer());
 	SDL_Rect standardTileSrcRect {0, 0, constants::tileSprite::w, constants::tileSprite::h};
 	SDL_Texture* slimeTexture = utils::loadTexture("../res/enemies/greenslime.png", m_windowToRenderTo.getRenderer());
 	SDL_Rect slimeSrcRect{0, 0, 16, 16};
@@ -140,6 +142,8 @@ void Level::setUpLevel1()
 
 void Level::renderLevel()
 {
+	m_windowToRenderTo.render(m_background);
+
 	for (std::vector<Tile*> row : *m_map) 
 			for(Tile* tile : row)
 				if(tile)

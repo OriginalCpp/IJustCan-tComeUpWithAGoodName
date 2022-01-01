@@ -11,6 +11,7 @@
 
 #include <SDL.h>
 
+/* Will expand in the future! */
 class Menu
 {
     SDL_Texture* m_texture;

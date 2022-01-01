@@ -16,8 +16,8 @@ namespace constants
 
     namespace playerSprite
     {
-        constexpr int w {16};
-        constexpr int h {23}; 
+        constexpr int w {17};
+        constexpr int h {31}; 
     }
 
     namespace tileSprite

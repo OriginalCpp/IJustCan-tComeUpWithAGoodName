@@ -168,9 +168,9 @@ void Slime::resolveCollision(const std::vector<SDL_FPoint>* const p_outerPoints,
     if(!p_outerPoints || !p_dynamicGameObject)
 		throw "RESOLVECOLLISION(): CALL_WITH_NULLPTR";
 
-	SDL_FRect thisHitbox {*getHitBox()};
+	const SDL_FRect& thisHitbox {*getHitBox()};
 
-	SDL_FRect dOHitbox {*p_dynamicGameObject->getHitBox()};
+	const SDL_FRect& dOHitbox {*p_dynamicGameObject->getHitBox()};
 
 	bool fromAbove{};
 	bool fromLeft{};
@@ -181,6 +181,7 @@ void Slime::resolveCollision(const std::vector<SDL_FPoint>* const p_outerPoints,
 
 	/* iterates through each outerPoint and checks the directions from which the dO is colliding with the sO */
 
+	//TODO make as own function that returns array of booleans!
 	for(const SDL_FPoint& outerPoint : (*p_outerPoints))
 	{
 		if((outerPoint.x == thisHitbox.x) && (outerPoint.y == thisHitbox.y))
@@ -251,13 +252,23 @@ void Slime::resolveCollision(const std::vector<SDL_FPoint>* const p_outerPoints,
 	
 	if(fromRight)
     {
-		setX(dOHitbox.x + dOHitbox.w);
+		float xIntersectionLength {dOHitbox.x + dOHitbox.w - thisHitbox.x};
+
+		setX(thisHitbox.x + xIntersectionLength * 0.5 + 0.01);
         setVector(-1 * getVector()[0], getVector()[1]); 
+
+		p_dynamicGameObject->setX(dOHitbox.x - xIntersectionLength * 0.5 - 0.01);
+		p_dynamicGameObject->setVector(-1 * p_dynamicGameObject->getVector()[0], p_dynamicGameObject->getVector()[1]);
     }
     else if(fromLeft)
     {
-		setX(dOHitbox.x - thisHitbox.w);
+		float xIntersectionLength {thisHitbox.x + thisHitbox.w - dOHitbox.x};
+
+		setX(thisHitbox.x - xIntersectionLength * 0.5 - 0.01);
         setVector(-1 * getVector()[0], getVector()[1]);
+
+		p_dynamicGameObject->setX(dOHitbox.x + xIntersectionLength * 0.5 + 0.01);
+		p_dynamicGameObject->setVector(-1 * p_dynamicGameObject->getVector()[0], p_dynamicGameObject->getVector()[1]);
     }
 }
 

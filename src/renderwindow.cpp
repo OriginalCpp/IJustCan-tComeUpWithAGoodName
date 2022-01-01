@@ -41,6 +41,14 @@ SDL_Renderer* RenderWindow::getRenderer()
 	return m_renderer;
 }
 
+
+void RenderWindow::render(SDL_Texture* p_texture)
+{
+	if(!p_texture) throw "TEX_IS_NULLPTR";
+	
+	SDL_RenderCopy(m_renderer, p_texture, NULL, NULL);
+}
+
 void RenderWindow::render(GameObject* p_object)
 {
 	if(!utils::isInWindow(p_object))
@@ -65,9 +73,11 @@ void RenderWindow::render(GameObject* p_object)
 void RenderWindow::render(Menu* p_menu)
 {
 	SDL_Texture* tex{nullptr};
-
 	tex = p_menu->getTexture();
 
+	if(!tex)
+		throw "TEX_NOT_LOADED";
+	
 	SDL_RenderCopy(m_renderer, tex, NULL, NULL);
 }
 

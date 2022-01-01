@@ -50,5 +50,7 @@ private:
 
     std::vector<DynamicGameObject*>* m_enemies {nullptr};
 
+    SDL_Texture* m_background;
+
     RenderWindow& m_windowToRenderTo;
 };

@@ -4,16 +4,14 @@
     "version": "2.0.0",
     "tasks": [
         {
-            "label": "Build",
+            "label": "debug build",
             "type": "shell",
             "command": "g++",
             "args": [
                 "-O0",
                 "-std=c++20",
-                "-o",
-                "C:/C++/JumpyMagician/build/JumpyMagician.exe",
                 "C:/C++/JumpyMagician/src/*.cpp",
-                "-g",
+                "-g3",
                 "-Wall",
                 "-IC:/C++/JumpyMagician/include",
                 "-IC:/SDL-w64/include/SDL2",
@@ -22,12 +20,39 @@
                 "-lSDL2main",
                 "-lSDL2",
                 "-lSDL2_image",
+                "-o",
+                "C:/C++/JumpyMagician/build/JumpyMagician.exe",
             ],
-
-            "group":{
-                "kind": "build",
-                "isDefault": true
-            }
+            "group": "build",
+            "problemMatcher": [
+                "$gcc"
+            ]
+            
+        },
+        {
+            "label": "release build",
+            "type": "shell",
+            "command": "g++",
+            "args": [
+                "-O3",
+                "-g0",
+                "-std=c++20",
+                "C:/C++/JumpyMagician/src/*.cpp",
+                "-Wall",
+                "-IC:/C++/JumpyMagician/include",
+                "-IC:/SDL-w64/include/SDL2",
+                "-LC:/SDL-w64/lib",
+                "-lmingw32",
+                "-lSDL2main",
+                "-lSDL2",
+                "-lSDL2_image",
+                "-o",
+                "C:/C++/JumpyMagician/build/JumpyMagician.exe",
+            ],
+            "group":"build",
+            "problemMatcher": [
+                "$gcc"
+            ]
         }
     ]
 }

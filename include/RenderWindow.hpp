@@ -28,6 +28,7 @@ public:
 
 	SDL_Renderer* getRenderer();
 
+	void render(SDL_Texture* p_texture);
 	void render(GameObject* p_object);
 	void render(Menu* p_menu);
 

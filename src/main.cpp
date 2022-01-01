@@ -34,8 +34,6 @@
  * 
  * ? class for (mathematical) vectors in objects so that you can overload the operators for vector arithmetics ?
  *
- * 
- * !BUG: FIX COLLISION OF SLIMES
  * !sprites have to be in the bottom left corner !!! is there a fix for this ?
  * 
  * TODO: clean up gameobject hierarchy, make functions virtual, make destructors to prevent memory leak, etc...
@@ -81,21 +79,21 @@ int main(int argc, char* argv[])
 
 	std::cout << "Loaded level " << currentLevel << " succesfully!\n";
 
-	float currentFrameTimeInSeconds{static_cast<float>(SDL_GetTicks())/1000};
+	float currentFrameTimeInSeconds{static_cast<float>(SDL_GetTicks()) * 0.001f};
 	float previousFrameTimeInSeconds{0.0f};
 	float elapsedTimeInSeconds {0.0f};
 	FrameStatistics frameStatistics;
 
-	std::cout << "Loading time: " << (static_cast<float>(SDL_GetTicks())/1000) << " seconds\n";
+	std::cout << "Loading time: " << (static_cast<float>(SDL_GetTicks()) * 0.001f) << " seconds\n";
 
 	while (gameState.gameRunning) 
 	{
 		previousFrameTimeInSeconds = currentFrameTimeInSeconds;
-		currentFrameTimeInSeconds = static_cast<float>(SDL_GetTicks())/1000;
+		currentFrameTimeInSeconds = static_cast<float>(SDL_GetTicks()) * 0.001f;
 		elapsedTimeInSeconds = currentFrameTimeInSeconds - previousFrameTimeInSeconds; 
 
 		frameStatistics.addFrameTime(elapsedTimeInSeconds);
-		if(frameStatistics.getNumberOfFrameTimes() > 100)
+		if(frameStatistics.getNumberOfFrameTimes() > 1000)
 		{
 			frameStatistics.printAverageFrameTime();
 			frameStatistics.reset();
@@ -108,7 +106,6 @@ int main(int argc, char* argv[])
 		window.clear();
 
 		level.renderLevel();
-		
 		window.display();
 	}
 
@@ -141,6 +138,10 @@ int main(int argc, char* argv[])
 
 	}
 	catch(const char* error)
+	{
+		std::cerr << "Error: " << error << '\n';
+	}
+	catch(const std::string& error)
 	{
 		std::cerr << "Error: " << error << '\n';
 	}

@@ -29,7 +29,7 @@ void Game::handleInput(Player& p_player, GameState& p_gameState)
 					{
 						case(SDLK_a):
 							p_player.setXVelocityGoal(-1);
-							p_player.setSrc(utils::createRect(0, constants::playerSprite::h, constants::playerSprite::w, constants::playerSprite::h));
+							p_player.setSrc(utils::createRect(constants::playerSprite::w, 0, constants::playerSprite::w, constants::playerSprite::h));
 							break;
 						case(SDLK_d):
 							p_player.setXVelocityGoal(1);
@@ -89,8 +89,8 @@ void Game::update(Level& p_level, float p_elapsedTimeInSeconds, GameState& p_gam
 {
 	Player& p_player = p_level.getPlayer();
 	Camera& p_camera = p_level.getCamera();
-	auto p_map = p_level.getMap();
-	auto p_enemies = p_level.getEnemies();
+	std::vector<std::vector<Tile*>>& p_map = p_level.getMap(); //TODO
+	std::vector<DynamicGameObject*>& p_enemies = p_level.getEnemies();
 
 	if(p_map.empty())
 		throw "MAP_EMPTY";
@@ -106,6 +106,27 @@ void Game::update(Level& p_level, float p_elapsedTimeInSeconds, GameState& p_gam
 	//Collision
 	p_player.isGrounded(false);
 
+	for(DynamicGameObject* enemy : p_enemies)
+		if(enemy)
+			if(enemy->isAlive())
+			{
+				p_player.handleCollision(enemy);
+			}
+
+
+	int amountOfEnemies = static_cast<int>(p_enemies.size());
+
+	for(int i {0}; i < amountOfEnemies - 1; ++i)
+	{	
+		if(!p_enemies[i]->isAlive()) continue;
+
+		for(int j {i+1}; j < amountOfEnemies; ++j)
+		{
+			if(!p_enemies[j]->isAlive()) continue;
+			p_enemies[i]->handleCollision(p_enemies[j]);
+		}
+	} 
+
 	for(std::vector<Tile*>& row : p_map)
 		for(Tile* tile : row)
 		{
@@ -118,17 +139,6 @@ void Game::update(Level& p_level, float p_elapsedTimeInSeconds, GameState& p_gam
 		}
 
 
-	for(DynamicGameObject* enemy : p_enemies)
-		if(enemy)
-			if(enemy->isAlive())
-			{
-				p_player.handleCollision(enemy);
-
-				for(DynamicGameObject* otherEnemy : p_enemies)
-					if(otherEnemy)
-						if(otherEnemy->isAlive())
-							/*otherEnemy->handleCollision(enemy)*/; //TODO
-			}
 	
 	if(!p_player.isAlive())
 	{
