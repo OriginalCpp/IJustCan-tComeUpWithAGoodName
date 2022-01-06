@@ -11,7 +11,7 @@
                 "-O0",
                 "-std=c++20",
                 "C:/C++/JumpyMagician/src/*.cpp",
-                "-g3",
+                "-g",
                 "-Wall",
                 "-IC:/C++/JumpyMagician/include",
                 "-IC:/SDL-w64/include/SDL2",

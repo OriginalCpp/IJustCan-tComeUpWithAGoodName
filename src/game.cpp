@@ -12,6 +12,7 @@
 
 #include "KeyboardState.hpp"
 #include "Utils.hpp"
+#include <iostream>
 #include <SDL.h>
 
 void Game::handleInput(Player& p_player, GameState& p_gameState)
@@ -89,8 +90,8 @@ void Game::update(Level& p_level, float p_elapsedTimeInSeconds, GameState& p_gam
 {
 	Player& p_player = p_level.getPlayer();
 	Camera& p_camera = p_level.getCamera();
-	std::vector<std::vector<Tile*>>& p_map = p_level.getMap(); //TODO
-	std::vector<DynamicGameObject*>& p_enemies = p_level.getEnemies();
+	auto& p_map = p_level.getMap(); //TODO
+	auto& p_enemies = p_level.getEnemies();
 
 	if(p_map.empty())
 		throw "MAP_EMPTY";
@@ -154,32 +155,15 @@ void Game::update(Level& p_level, float p_elapsedTimeInSeconds, GameState& p_gam
 	else if(p_player.getAmountOfJumps() == constants::maxAmountOfJumps)
 		p_player.setAmountOfJumps(constants::maxAmountOfJumps -1);
 	
-	//CAMERA
-	float offsetToApply[2] {0, 0};
 
-	if(!p_camera.hasToTrack()) return;
+	p_level.resolveLimitRectCollisions();
+
+	//CAMERA
+
+	if(!p_camera.hasToTrack()) return; 
 	else p_camera.beginToTrack();
 
-	p_camera.trackObject(offsetToApply);
-	if(offsetToApply[0] || offsetToApply[1])
-	{
-		for(const std::vector<Tile*>& row : p_map)
-			for(Tile* tile : row)
-				if (tile)
-				{
-					tile->setX(tile->getX() + offsetToApply[0]);
-					tile->setY(tile->getY() + offsetToApply[1]);
-				}
+	auto offsetToApply {p_camera.trackObject()};
 
-		for(DynamicGameObject* enemy : p_enemies)
-		{
-			enemy->setX(enemy->getX() + offsetToApply[0]);
-			enemy->setY(enemy->getY() + offsetToApply[1]);
-		}
-
-		
-
-		p_player.setX(p_player.getX() + offsetToApply[0]);
-		p_player.setY(p_player.getY() + offsetToApply[1]);
-	}
+	p_level.applyOffset(*offsetToApply);
 }

@@ -14,11 +14,11 @@
 namespace test
 {
     /**
-     * @brief Test utils::collision_PointVsRect().
+     * @brief Test utils::isPointInRect().
      * 
-     * @sa utils::collision_PointVsRect()
+     * @sa utils::isPointInRect()
      */
-    void utils_collision_PointVsRect();
+    void utils_isPointInRect();
 
     /**
      * @brief Test utils::getIntersectionCornerFPoints().

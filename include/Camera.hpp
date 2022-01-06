@@ -10,6 +10,7 @@
 
 #pragma once
 #include "GameObject.hpp"
+#include <memory>
 #include <SDL.h>
 
 
@@ -21,12 +22,24 @@ public:
     /* 
     \param p_margin Represents the area in which the m_objectToTrack will be kept in by the camera.
     \param p_object The GameObject which shall be tracked by the camera.
+    \param p_limit Represents the area that the camera is limited to, so with this camera active we won't see outside of this rectangle.
     \param p_isTracking Starting tracking state of the camera.
     */
-    Camera(SDL_FRect p_margin, GameObject* p_object, bool p_isTracking = false);
+    Camera(SDL_Rect p_margin, GameObject* p_object, SDL_Rect p_limit);
+
+    void applyOffsetToLimitRect(const SDL_Point& p_offset);
+
+    const SDL_Rect& getLimitRect();
+    void setLimitRect(SDL_Rect p_newLimitRect);
+    
+    int getLimitRectX();
+    void setLimitRectX(int p_newXValue);
+
+    int getLimitRectY();
+    void setLimitRectY(int p_newYValue);
 
     /*
-    Checks wether the m_objectToTrack has entered m_margin or not. 
+    Checks wether the m_objectToTrack has yet entered m_margin (true) or not (false).
     */
     bool hasToTrack() const;
 
@@ -36,19 +49,29 @@ public:
     void beginToTrack();
 
     /*
+    Set m_isTracking to false, the Camera stops to track m_objectToTrack.
+    */
+   void stopToTrack();
+
+    /*
     Calculate the offset that has to be made to keep the m_objectToTrack in m_margin.
 
-    \param p_offset An array to hold the calculated offset.
+    \param p_offset A pointer to an SDL_Point that holds the offset.
     */
-    void trackObject(float (&p_offset)[2]);
+    std::unique_ptr<SDL_Point> trackObject();
+
+    std::unique_ptr<SDL_Point> setUpCameraForBeginningOfLevel();
 
 private:
 
     /*Represents the area in which the m_objectToTrack will be kept in by the camera.*/
-    SDL_FRect m_margin{0, 0, 0, 0};
+    SDL_Rect m_margin{0, 0, 0, 0};
 
     /*The GameObject which shall be tracked by the camera.*/
     GameObject* m_objectToTrack {nullptr};
+
+    /*Represents the area that the camera is limited to, so while this camera is active we won't see outside of this rectangle */
+    SDL_Rect m_limit{0, 0, 0, 0};
 
     /*Tracking state of the camera, only tracks the m_objectToTrack if this is true.*/
     bool m_isTracking {false};

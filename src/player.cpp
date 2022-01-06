@@ -157,7 +157,7 @@ void Player::update(float p_elapsedTimeInSeconds)
 void Player::jump()
 {
 	constexpr int simplification = -2*constants::normalJumpHeight/(constants::normalJumpWidth/2); 
-	setVector(getVector()[0], simplification * getSpeed());
+	setVectorY(simplification * getSpeed());
 }
 
 void Player::die()

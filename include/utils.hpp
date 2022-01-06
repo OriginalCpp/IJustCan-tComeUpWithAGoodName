@@ -38,13 +38,14 @@ namespace utils
 	/**
  	* @brief Checks if a SDL_FPoint is in a SDL_FRect. Has a test function.
  	*
-	* @see test::utils_collision_PointVsRect() 
+	* @see test::utils_isPointInRect() 
 	*
  	* @param point
  	* @param rect 
  	* @return Returns true if the point is in the rect, false otherwise.
  	*/
-	bool collision_PointVsRect(const SDL_FPoint* point, const SDL_FRect* rect);
+	bool isPointInRect(const SDL_FPoint& point, const SDL_FRect& rect);
+	bool isPointInRect(const SDL_FPoint&, const SDL_Rect& rect);
 
 	/**
 	 * @brief Get the corners of p_rect1 and p_rect2 that reside inside each other. Remarks: Has a test function.

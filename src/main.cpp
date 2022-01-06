@@ -34,21 +34,18 @@
  * 
  * ? class for (mathematical) vectors in objects so that you can overload the operators for vector arithmetics ?
  *
+ * !@bug minor: falling in hole with specific level -> Camera is a bit off and does a jump idk why
  * !sprites have to be in the bottom left corner !!! is there a fix for this ?
  * 
+ * TODO: make the camera track smooth + make margin on player at the beginning of the level then if he moves either direction make margin slowly into the center (have fun doing this ;) )
  * TODO: clean up gameobject hierarchy, make functions virtual, make destructors to prevent memory leak, etc...
  * TODO: clean up Level class, WERE HOLDING A POINTER TO WINDOW SO TECHNICALLY WE COULD DELETE IT we're getting a non const pointer from a const mem func of renderWindow, could be undefined behaviour if used incorrectly!!!!!!
- * TODO: clean up larry setUp enemies in loadlevel
- * TODO: refactor resolveCollision() + make it virtual maybe
- * TODO: (maybe staticGameObject class)
- * TODO: make camera go smooth; bug with black lines->maybe make offset in int bc then there are no accuracy errors.
  * TODO: make animations
- * TODO: make function to add smth to X/Y (GAmeObject) so that I dont have to set everytime + use that in update functions
+ * TODO: make function to add smth to X/Y (GameObject) so that I dont have to set everytime + use that in update functions
  * TODO: make an offset var in GameObject to hold the value of dst.h - collR.h or smth like that
  * TODO: rewrite GameObject::GameObject() so that one can do the textures in every corner
- * TODO: refactor big portions of code in the GameLoop
  * TODO: draw better tileSet sprites, make PlayerAnimations, and make a background
- * TODO: delete all objects in tiles after a level is completed/game exits to prevent memory leak
+ * TODO: REFACTORING
  */
 int main(int argc, char* argv[])
 {
@@ -61,7 +58,6 @@ int main(int argc, char* argv[])
 	}	
 	else
 		std::cout << "Initialization complete" << std::endl;
-
 
 	RenderWindow window("JumpyMagician.exe", constants::window::w, constants::window::h);
 

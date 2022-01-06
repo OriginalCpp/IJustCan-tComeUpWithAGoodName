@@ -32,7 +32,7 @@ void FrameStatistics::printAverageFrameTime() const
     float average = Template::calculateAverage(m_FrameTimesInSeconds);
     float ms = average * 1000;
     float us = ms * 1000;
-    std::cout << "Average frame time is " << average << "seconds ( " << ms << "ms, " << us << "us)" << "\nThis corresponds to " << (1/average) << "frames per second!\n";
+    std::cout << "Average frame time is " << average << "seconds (" << ms << "ms, " << us << "us)" << "\nThis corresponds to " << (1/average) << "frames per second!\n";
 }
 
 void FrameStatistics::reset()

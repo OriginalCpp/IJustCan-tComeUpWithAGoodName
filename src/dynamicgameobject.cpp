@@ -31,7 +31,25 @@ void DynamicGameObject::setVector(float p_x, float p_y)
 	m_vector[1] = p_y;
 }
 
+float DynamicGameObject::getVectorX() const
+{
+	return m_vector[0];
+}
 
+void DynamicGameObject::setVectorX(float p_newXValue)
+{
+	m_vector[0] = p_newXValue;
+}
+
+float DynamicGameObject::getVectorY() const
+{
+	return m_vector[1];
+}
+
+void DynamicGameObject::setVectorY(float p_newYValue)
+{
+	m_vector[1] = p_newYValue;
+}
 
 const SDL_FPoint* DynamicGameObject::getPreviousPosition() const
 {
@@ -91,7 +109,7 @@ void DynamicGameObject::resolveCollision(const std::vector<SDL_FPoint>* const p_
 
 	/* iterates through each outerPoint and checks the directions from which the dO is colliding with the sO */
 
-	for(const SDL_FPoint& outerPoint : (*p_outerPoints))
+	for(const SDL_FPoint& outerPoint : (*p_outerPoints)) //TODO: make this a function
 	{
 		if((outerPoint.x == thisHitbox.x) && (outerPoint.y == thisHitbox.y))
 		{
@@ -172,24 +190,23 @@ void DynamicGameObject::resolveCollision(const std::vector<SDL_FPoint>* const p_
 
 	if(fromAbove)
 	{
-		setVector(getVector()[0], 0);
+		setVectorY(0.0f);
 		setY(sOHitbox.y - thisHitbox.h);
 		isGrounded(true);
 	}
 	else if(fromRight)
 	{
-		setVector(0, (getVector())[1]);
+		setVectorX(0.0f);
 		setX(sOHitbox.x + sOHitbox.w + 0.01);
 	}
 	else if(fromBelow)
 	{
-		setVector((getVector())[0], 0);
+		setVectorY(0.0f);
 		setY(sOHitbox.y + sOHitbox.h + 0.01);
 	}
 	else if(fromLeft)
 	{
-		setVector(-1 * (getVector())[0], (getVector())[1]);
-		setVector(0, (getVector())[1]);
+		setVectorX(0.0f);
 		setX(sOHitbox.x - thisHitbox.w - 0.01);
 	}
 }

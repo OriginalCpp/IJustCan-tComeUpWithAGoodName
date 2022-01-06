@@ -10,6 +10,7 @@
  */
 #include "Level.hpp"
 
+#include "Camera.hpp"
 #include "Constants.hpp"
 #include "DynamicGameObject.hpp"
 #include "Player.hpp"
@@ -44,23 +45,16 @@ Level::~Level()
 
 void Level::setUpLevel(int p_level)
 {
-	try
+	if(!m_map->empty() && !m_enemies->empty())
+		throw "LEVEL_NOT_CLEARED";
+		
+	switch(p_level)
 	{
-		if(!m_map->empty() && !m_enemies->empty())
-			throw "LEVEL_NOT_CLEARED";
-
-		switch(p_level)
-		{
-			case 1:
-				setUpLevel1();
-				break;
-			default:
-				throw "UNKNOWN_LEVEL";
-		}
-	}
-	catch(const char* error)
-	{
-		std::cerr << "setUpLevel(): " << error << '\n';
+		case 1:
+			setUpLevel1();
+			break;
+		default:
+			throw "UNKNOWN_LEVEL";
 	}
 }
 
@@ -75,13 +69,9 @@ void Level::setUpLevel1()
 
 	if(!level1.is_open()) throw "COULD_NOT_OPEN_FILE";
 
-	SDL_Rect playerSrcRect {0, 0, constants::playerSprite::w, constants::playerSprite::h};
-	SDL_Rect playerDstRect {100, 100, playerSrcRect.w*constants::scale, playerSrcRect.h*constants::scale};
+	
 	SDL_Texture* playerTexture{utils::loadTexture("../res/player/Maincharacter.png", m_windowToRenderTo.getRenderer())};
-	m_player = new Player(playerTexture, playerSrcRect, playerDstRect);
-
-	m_camera = new Camera(utils::createFRect((constants::window::w/2) - (constants::camera::w/2), 10*constants::scale*constants::tileSprite::h - constants::camera::h, 
-				  		  constants::camera::w, constants::camera::h), m_player);
+	SDL_Rect playerSrcRect {0, 0, constants::playerSprite::w, constants::playerSprite::h};
 
 
 	SDL_Texture* tileTexture = utils::loadTexture("../res/tileset/outlinedSortedTileset.png", m_windowToRenderTo.getRenderer());
@@ -114,6 +104,11 @@ void Level::setUpLevel1()
 							, utils::createRect(column*constants::tileSprite::wScaled
 							, line*constants::tileSprite::hScaled, constants::tileSprite::wScaled, constants::tileSprite::hScaled)));
 				break;
+			case 'P':
+				row.push_back(nullptr);
+				m_player = new Player(playerTexture, playerSrcRect, utils::createRect(column*constants::tileSprite::wScaled, line*constants::tileSprite::hScaled,
+										constants::playerSprite::wScaled, constants::playerSprite::hScaled));
+				break;
 			case 'S':
 				row.push_back(nullptr);
 				m_enemies->push_back(new Slime(slimeTexture, slimeSrcRect
@@ -133,12 +128,92 @@ void Level::setUpLevel1()
 		++column;
 	}
 
+	if(!m_player || m_map->empty() || m_enemies->empty()) throw "FAILED_TO_LOAD_LEVEL_1";
+
+
+	SDL_Rect DefaultCameraMargin = utils::createRect((constants::window::w/2) - (constants::camera::w/2),
+									 11*constants::scale*constants::tileSprite::h - constants::camera::h, constants::camera::w, constants::camera::h);
+
+	SDL_Rect MapLimitRect = utils::createRect(0, 0,(*m_map)[0].size() * constants::tileSprite::wScaled, m_map->size() * constants::tileSprite::hScaled);
+	//DEBUG
+	std::cout << "m_map->size() * constants::tileSprite::wScaled: " << m_map->size() * constants::tileSprite::wScaled << ", " << "(*m_map)[0].size() * constants::tileSprite::hScaled: " << (*m_map)[0].size() * constants::tileSprite::hScaled << '\n';
+	
+	m_camera = new Camera(DefaultCameraMargin, m_player, MapLimitRect);
+
+	auto offset {m_camera->setUpCameraForBeginningOfLevel()};
+	offset->x -= (constants::window::w/2 - constants::camera::w); //? make clearer
+	applyOffset(*offset);
+
 	utils::selectTiles(*m_map);
 
 	level1.close();	
 }
 
+void Level::applyOffset(const SDL_Point& p_offset)
+{
+	m_camera->applyOffsetToLimitRect(p_offset);
 
+	if(p_offset.x || p_offset.y)
+	{
+		for(const std::vector<Tile*>& row : *m_map)
+			for(Tile* tile : row)
+				if (tile)
+				{
+					tile->setX(tile->getX() + p_offset.x);
+					tile->setY(tile->getY() + p_offset.y);
+				}
+
+		for(DynamicGameObject* enemy : *m_enemies)
+		{
+			enemy->setX(enemy->getX() + p_offset.x);
+			enemy->setY(enemy->getY() + p_offset.y);
+		}
+
+		
+
+		m_player->setX(m_player->getX() + p_offset.x);
+		m_player->setY(m_player->getY() + p_offset.y);
+	}
+}
+
+
+
+void Level::resolveLimitRectCollisions()
+{
+	resolveLimitRectCollision(m_player);
+
+	for(DynamicGameObject* enemy : *m_enemies)
+		resolveLimitRectCollision(enemy);
+}
+
+void Level::resolveLimitRectCollision(DynamicGameObject* p_object)
+{
+	const SDL_Rect& limit = m_camera->getLimitRect();
+
+	if(p_object->getY() < limit.y)
+	{
+		p_object->setY(limit.y);
+		p_object->setVectorY(0.0f);
+	}
+	else if(p_object->getX() + p_object->getW() > limit.x + limit.w)
+	{
+		p_object->setX(limit.x + limit.w - p_object->getW());
+
+		if(p_object->getObjectType() == ObjectType::slime)
+			p_object->setVectorX(p_object->getVectorX() * -1);
+	}
+	else if(p_object->getY() + p_object->getH() > limit.y + limit.h)
+	{
+		p_object->setY(limit.y + limit.h - p_object->getH());
+		p_object->setVectorY(0.0f);
+	}
+	else if(p_object->getX() < limit.x)
+	{	
+		p_object->setX(limit.x);
+		if(p_object->getObjectType() == ObjectType::slime)
+			p_object->setVectorX(p_object->getVectorX() * -1);
+	}
+}	
 
 void Level::renderLevel()
 {
@@ -159,6 +234,12 @@ void Level::renderLevel()
 
 void Level::clearLevel()
 {
+	delete m_player;
+	m_player = nullptr;
+
+	delete m_camera;
+	m_camera = nullptr;
+
 	for(std::vector<Tile*>& row : *m_map)
 		for(Tile*& tile : row)
 			delete tile;
@@ -196,3 +277,5 @@ std::vector<DynamicGameObject*>& Level::getEnemies()
 {
 	return *m_enemies;
 }
+
+

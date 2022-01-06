@@ -41,6 +41,12 @@ public:
     const float* getVector() const;
 	void setVector(float p_x, float p_y);
 
+    float getVectorX() const;
+    void setVectorX(float p_newXValue);
+    float getVectorY() const;
+    void setVectorY(float p_newYValue);
+
+
     const SDL_FPoint* getPreviousPosition() const;
     void setPreviousPosition(const SDL_FPoint* p_previousPosition);
 

@@ -89,12 +89,18 @@ SDL_Texture* utils::loadTexture(const char* p_filePath, SDL_Renderer* p_renderer
 
 
 /**
- * @see test::utils_collision_PointVsRect()
+ * @see test::utils_isPointInRect()
  */
-bool utils::collision_PointVsRect(const SDL_FPoint* point, const SDL_FRect* rect)
+bool utils::isPointInRect(const SDL_FPoint& point, const SDL_FRect& rect)
 {
-	return(	((point->x >= rect->x) && (point->x <= (rect->x + rect->w)) 
-			&& (point->y >= rect->y) && (point->y <= (rect->y + rect->h))) ? true : false	);
+	return( (point.x >= rect.x) && (point.x <= (rect.x + rect.w))
+			&& (point.y >= rect.y) && (point.y <= (rect.y + rect.h)));
+}
+
+bool utils::isPointInRect(const SDL_FPoint& point, const SDL_Rect& rect)
+{
+	return( (point.x >= rect.x) && (point.x <= (rect.x + rect.w))
+			&& (point.y >= rect.y) && (point.y <= (rect.y + rect.h)));
 }
 
 /**
@@ -119,13 +125,13 @@ std::unique_ptr<std::vector<SDL_FPoint>> utils::getIntersectionCornerFPoints(con
 
 	for(const SDL_FPoint& point : rect1Points)
 	{
-		if(utils::collision_PointVsRect(&point, p_rect2))
+		if(utils::isPointInRect(point, *p_rect2))
 			intersectionCornerFPoints->push_back(point);
 	}
 
 	for(const SDL_FPoint& point : rect2Points)
 	{
-		if(utils::collision_PointVsRect(&point, p_rect1))
+		if(utils::isPointInRect(point, *p_rect1))
 			intersectionCornerFPoints->push_back(point);
 	}
 

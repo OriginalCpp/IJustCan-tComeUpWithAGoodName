@@ -18,27 +18,27 @@
 #include <SDL.h>
 #include <vector>
 
-void test::utils_collision_PointVsRect()
+void test::utils_isPointInRect()
 {
-    std::cout << "\nTest::utils_collision_PointVsRect():\n";
+    std::cout << "\nTest::utils_isPointInRect():\n";
     std::string testResult{""};
 
     //TEST 1
     SDL_FPoint test1Point = {1, 1};
     SDL_FRect test1Rect = {0, 0, 2, 2};
-    testResult = (utils::collision_PointVsRect(&test1Point, &test1Rect)) ? ("  Test 1 completed\n") : ("  Test 1 failed\n");
+    testResult = (utils::isPointInRect(test1Point, test1Rect)) ? ("  Test 1 completed\n") : ("  Test 1 failed\n");
     std::cout << testResult;
     
     //TEST 2
     SDL_FPoint test2Point = {3, 3};
     SDL_FRect test2Rect = {1, 1, 2, 2};
-    testResult = (utils::collision_PointVsRect(&test2Point, &test2Rect)) ? ("  Test 2 failed\n") : ("  Test 2 completed\n");
+    testResult = (utils::isPointInRect(test2Point, test2Rect)) ? ("  Test 2 completed\n") : ("  Test 2 failed\n");
     std::cout << testResult;
 
     //TEST 3
     SDL_FPoint test3Point = {1, 2};
     SDL_FRect test3Rect = {0, 0, 1, 1};
-    testResult = (utils::collision_PointVsRect(&test3Point, &test3Rect)) ? ("  Test 3 failed\n") : ("  Test 3 completed\n");
+    testResult = (utils::isPointInRect(test3Point, test3Rect)) ? ("  Test 3 failed\n") : ("  Test 3 completed\n");
     std::cout << testResult;
 }
 

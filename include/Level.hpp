@@ -27,10 +27,13 @@ public:
 
     void setUpLevel(int p_level);
 
-    void setUpLevel1();
-
     void renderLevel();
     void clearLevel();
+    
+    void applyOffset(const SDL_Point& p_offset);
+
+    void resolveLimitRectCollisions();
+    void resolveLimitRectCollision(DynamicGameObject* p_object);
 
     Player& getPlayer();
 
@@ -41,6 +44,8 @@ public:
     std::vector<DynamicGameObject*>& getEnemies();
 
 private:
+
+    void setUpLevel1();
 
     Camera* m_camera {nullptr};
 

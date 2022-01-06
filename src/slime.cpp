@@ -140,23 +140,23 @@ void Slime::resolveCollision(const std::vector<SDL_FPoint>* const p_outerPoints,
 
 	if(fromAbove)
 	{
-		setVector(getVector()[0], 0);
+		setVectorY(0.0f);
 		setY(sOHitbox.y - thisHitbox.h);
 		isGrounded(true);
 	}
 	else if(fromRight)
 	{
-		setVector(-1 * (getVector())[0], (getVector())[1]);
+		setVectorX(-1 * getVectorX());
 		setX(sOHitbox.x + sOHitbox.w + 0.01);
 	}
 	else if(fromBelow)
 	{
-		setVector((getVector())[0], 0);
+		setVectorY(0.0f);
 		setY(sOHitbox.y + sOHitbox.h + 0.01);
 	}
 	else if(fromLeft)
 	{
-		setVector(-1 * (getVector())[0], (getVector())[1]);	
+		setVectorX(-1 * getVectorX());	
 		setX(sOHitbox.x - thisHitbox.w - 0.01);
 	}
 }
@@ -249,26 +249,27 @@ void Slime::resolveCollision(const std::vector<SDL_FPoint>* const p_outerPoints,
 
 	/* changes the position of the dO based on the directions it is colliding with the sO */
 
-	
-	if(fromRight)
+	if(fromAbove);
+	else if(fromRight)
     {
 		float xIntersectionLength {dOHitbox.x + dOHitbox.w - thisHitbox.x};
 
 		setX(thisHitbox.x + xIntersectionLength * 0.5 + 0.01);
-        setVector(-1 * getVector()[0], getVector()[1]); 
+        setVectorX(-1 * getVectorX()); 
 
 		p_dynamicGameObject->setX(dOHitbox.x - xIntersectionLength * 0.5 - 0.01);
-		p_dynamicGameObject->setVector(-1 * p_dynamicGameObject->getVector()[0], p_dynamicGameObject->getVector()[1]);
+		p_dynamicGameObject->setVectorX(-1 * p_dynamicGameObject->getVectorX());
     }
+	else if(fromBelow);
     else if(fromLeft)
     {
 		float xIntersectionLength {thisHitbox.x + thisHitbox.w - dOHitbox.x};
 
 		setX(thisHitbox.x - xIntersectionLength * 0.5 - 0.01);
-        setVector(-1 * getVector()[0], getVector()[1]);
+        setVectorX(-1 * getVectorX());
 
 		p_dynamicGameObject->setX(dOHitbox.x + xIntersectionLength * 0.5 + 0.01);
-		p_dynamicGameObject->setVector(-1 * p_dynamicGameObject->getVector()[0], p_dynamicGameObject->getVector()[1]);
+		p_dynamicGameObject->setVectorX(-1 * p_dynamicGameObject->getVectorX());
     }
 }
 
