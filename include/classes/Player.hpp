@@ -9,7 +9,7 @@
  * 
  */
 #pragma once
-#include "DynamicGameObject.hpp"
+#include "classes/DynamicGameObject.hpp"
 
 #include "Constants.hpp"
 #include <SDL.h>

@@ -11,7 +11,7 @@
 
 #include "Tests.hpp"
 
-#include "GameObject.hpp"
+#include "classes/GameObject.hpp"
 #include "Utils.hpp"
 #include <iostream>
 #include <memory>

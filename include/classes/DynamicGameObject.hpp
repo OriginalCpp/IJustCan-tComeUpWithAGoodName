@@ -9,22 +9,22 @@
  * 
  */
 #pragma once
-#include "GameObject.hpp"
+#include "classes/GameObject.hpp"
 
-#include "StaticGameObject.hpp"
+#include "classes/StaticGameObject.hpp"
 #include <SDL.h>
 #include <vector>
 
 class DynamicGameObject :public GameObject
 {
 public:
-
+    /* Forwards to GameObject::GameObject() */
     DynamicGameObject(SDL_Texture* p_texture, SDL_Rect p_src, SDL_Rect p_dst, SDL_FRect p_hitbox = {0, 0, 0, 0});
 
     virtual void update(float p_dt) = 0;
 
     /*
-	Detect wether a collision between THIS GameObject and p_otherGameObject is happening or not and then handle/resolves the collision.
+	Detect wether a collision between THIS GameObject and p_otherGameObject is happening or not and then handle/resolve the collision.
 	Remarks: This function only changes the position/vector of THIS GameObject in order to resolve the collision!
 
 	\param p_otherGameObject

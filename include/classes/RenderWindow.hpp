@@ -9,8 +9,8 @@
  */
 #pragma once
 
-#include "GameObject.hpp"
-#include "Menu.hpp"
+#include "classes/GameObject.hpp"
+#include "classes/Menu.hpp"
 #include <SDL.h>
 
 class RenderWindow 
@@ -26,11 +26,11 @@ public:
 	*/
 	RenderWindow(const char* p_title, int p_w, int p_h);
 
-	SDL_Renderer* getRenderer();
+	SDL_Renderer* getRenderer() const;
 
-	void render(SDL_Texture* p_texture);
-	void render(GameObject* p_object);
-	void render(Menu* p_menu);
+	void render(SDL_Texture* p_texture) const;
+	void render(const GameObject& p_object) const;
+	void render(const Menu& p_menu) const;
 
 	void display();	
 	void clear();
@@ -40,5 +40,5 @@ public:
 private:
 
 	SDL_Window* m_window {nullptr};
-	SDL_Renderer* m_renderer {nullptr};
+	mutable SDL_Renderer* m_renderer {nullptr};
 };

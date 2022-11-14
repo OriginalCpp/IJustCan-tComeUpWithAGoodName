@@ -8,7 +8,7 @@
  * @copyright Copyright (c) 2021
  * 
  */
-#include "DynamicGameObject.hpp"
+#include "classes/DynamicGameObject.hpp"
 
 #include "Utils.hpp"
 #include <iostream>
@@ -66,7 +66,7 @@ void DynamicGameObject::setPreviousPosition(const SDL_FPoint* p_previousPosition
 
 void DynamicGameObject::handleCollision(const StaticGameObject* const p_otherGameObject)
 {
-	if(((getObjectType() == ObjectType::player) && !utils::isInWindow(p_otherGameObject)) || !p_otherGameObject) return;
+	if(((getObjectType() == ObjectType::player) && !utils::isInWindow(*p_otherGameObject)) || !p_otherGameObject) return;
 
 	std::unique_ptr<std::vector<SDL_FPoint>> cornerPoints_unique {utils::getIntersectionCornerFPoints(getHitBox(), p_otherGameObject->getHitBox())};
 	
@@ -79,7 +79,7 @@ void DynamicGameObject::handleCollision(const StaticGameObject* const p_otherGam
 
 void DynamicGameObject::handleCollision(DynamicGameObject* const p_otherGameObject)
 {
-	if(((getObjectType() == ObjectType::player) && !utils::isInWindow(p_otherGameObject)) || !p_otherGameObject) return;
+	if(((getObjectType() == ObjectType::player) && !utils::isInWindow(*p_otherGameObject)) || !p_otherGameObject) return;
 
 	std::unique_ptr<std::vector<SDL_FPoint>> cornerPoints_unique {utils::getIntersectionCornerFPoints(getHitBox(), p_otherGameObject->getHitBox())};
 	

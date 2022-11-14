@@ -8,7 +8,7 @@
  * @copyright Copyright (c) 2021
  * 
  */
-#include "StaticGameObject.hpp"
+#include "classes/StaticGameObject.hpp"
 
 StaticGameObject::StaticGameObject(SDL_Texture* p_texture, SDL_Rect p_src, SDL_Rect p_dst, SDL_FRect p_hitbox)
     :GameObject(p_texture, p_src, p_dst, p_hitbox)

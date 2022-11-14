@@ -8,7 +8,7 @@
  * @copyright Copyright (c) 2021
  * 
  */
-#include "Slime.hpp"
+#include "classes/Slime.hpp"
 
 #include "Constants.hpp"
 #include "Utils.hpp"

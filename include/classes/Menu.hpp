@@ -20,5 +20,5 @@ public:
 
     Menu(SDL_Texture* p_tex);
 
-    SDL_Texture* getTexture();
+    SDL_Texture* getTexture() const;
 };

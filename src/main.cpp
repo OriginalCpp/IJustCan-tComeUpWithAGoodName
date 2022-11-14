@@ -8,20 +8,20 @@
  * 
  */
 
-#include "Camera.hpp"
+#include "classes/Camera.hpp"
 #include "Constants.hpp"
-#include "DynamicGameObject.hpp"
-#include "FrameStatistics.hpp"
+#include "classes/DynamicGameObject.hpp"
+#include "classes/FrameStatistics.hpp"
 #include "Game.hpp"
-#include "GameObject.hpp"
+#include "classes/GameObject.hpp"
 #include "GameState.hpp"
-#include "Level.hpp"
-#include "Menu.hpp"
-#include "Player.hpp"
-#include "RenderWindow.hpp"
-#include "Slime.hpp"
+#include "classes/Level.hpp"
+#include "classes/Menu.hpp"
+#include "classes/Player.hpp"
+#include "classes/RenderWindow.hpp"
+#include "classes/Slime.hpp"
 #include "Tests.hpp"
-#include "Tile.hpp"
+#include "classes/Tile.hpp"
 #include "Utils.hpp"
 #include <iostream>
 #include <SDL.h>
@@ -123,7 +123,7 @@ int main(int argc, char* argv[])
 		}
 
 		window.clear();
-		window.render(&deathScreenMenu);
+		window.render(deathScreenMenu);
 		window.display();
 	}
 

@@ -8,13 +8,14 @@
  * @copyright Copyright (c) 2021
  * 
  */
-#include "RenderWindow.hpp"
+#include "classes/RenderWindow.hpp"
 
-#include "GameObject.hpp"
-#include "Menu.hpp"
+#include "classes/GameObject.hpp"
+#include "classes/Menu.hpp"
 #include "Utils.hpp"
-#include <SDL.h>
 #include <iostream>
+#include <SDL.h>
+#include <string>
 
 RenderWindow::RenderWindow(const char* p_title, int p_w, int p_h)
 	:m_window{nullptr}, m_renderer{nullptr}
@@ -22,47 +23,49 @@ RenderWindow::RenderWindow(const char* p_title, int p_w, int p_h)
 	m_window = SDL_CreateWindow(p_title, SDL_WINDOWPOS_UNDEFINED, SDL_WINDOWPOS_UNDEFINED, p_w, p_h, SDL_WINDOW_SHOWN); //|| SDL_WINDOW_FULLSCREEN);
 	if (!m_window)
 	{
-		std::cout << "Window failed to initialize. Error: " << SDL_GetError() << std::endl;
-		return;
+		std::string error {"Window failed to initialize. Error: "};
+		error.append(SDL_GetError());
+		throw error;
 	}
 
 	m_renderer = SDL_CreateRenderer(m_window, -1, SDL_RENDERER_ACCELERATED);
 	if (!m_renderer)
 	{
-		std::cout << "Renderer failed to initialize. Error: " << SDL_GetError() << std::endl;
-		return;
+		std::string error {"Renderer failed to initialize. Error: "};
+		error.append(SDL_GetError());
+		throw error;
 	}
 }
 
 
 
-SDL_Renderer* RenderWindow::getRenderer()
+SDL_Renderer* RenderWindow::getRenderer() const 
 {
 	return m_renderer;
 }
 
 
-void RenderWindow::render(SDL_Texture* p_texture)
+void RenderWindow::render(SDL_Texture* p_texture) const
 {
 	if(!p_texture) throw "TEX_IS_NULLPTR";
 	
 	SDL_RenderCopy(m_renderer, p_texture, NULL, NULL);
 }
 
-void RenderWindow::render(GameObject* p_object)
+void RenderWindow::render(const GameObject& p_object) const
 {
 	if(!utils::isInWindow(p_object))
 		return;
 
 	SDL_Texture* tex {nullptr};
-	tex = p_object->getTexture();
+	tex = p_object.getTexture();
 
 	if(!tex)
-		throw "TEX_NOT_LOADED";
+		throw "OBJECT_HAS_NO_TEXTURE";
 	
-	const SDL_Rect* src = p_object->getSrc();
-	const SDL_Rect* dst = p_object->getDst();
-	const SDL_RendererFlip* flip = p_object->getFlip();
+	const SDL_Rect* src = p_object.getSrc();
+	const SDL_Rect* dst = p_object.getDst();
+	const SDL_RendererFlip* flip = p_object.getFlip();
 	
 	if(*flip == SDL_FLIP_NONE)
 		SDL_RenderCopy(m_renderer, tex, src, dst);
@@ -70,13 +73,13 @@ void RenderWindow::render(GameObject* p_object)
 		SDL_RenderCopyEx(m_renderer, tex, src, dst, 0, nullptr, *flip);
 }
 
-void RenderWindow::render(Menu* p_menu)
+void RenderWindow::render(const Menu& p_menu) const
 {
 	SDL_Texture* tex{nullptr};
-	tex = p_menu->getTexture();
+	tex = p_menu.getTexture();
 
 	if(!tex)
-		throw "TEX_NOT_LOADED";
+		throw "MENU_HAS_NO_TEXTURE";
 	
 	SDL_RenderCopy(m_renderer, tex, NULL, NULL);
 }

@@ -8,7 +8,7 @@
  * @copyright Copyright (c) 2021
  * 
  */
-#include "Menu.hpp"
+#include "classes/Menu.hpp"
 
 #include <SDL.h>
 
@@ -16,7 +16,7 @@ Menu::Menu(SDL_Texture* p_tex)
     :m_texture{p_tex}
 {}
 
-SDL_Texture* Menu::getTexture()
+SDL_Texture* Menu::getTexture() const
 {
     return m_texture;
 }

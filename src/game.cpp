@@ -90,29 +90,24 @@ void Game::update(Level& p_level, float p_elapsedTimeInSeconds, GameState& p_gam
 {
 	Player& p_player = p_level.getPlayer();
 	Camera& p_camera = p_level.getCamera();
-	auto& p_map = p_level.getMap(); //TODO
+	auto& p_map = p_level.getMap();
 	auto& p_enemies = p_level.getEnemies();
 
 	if(p_map.empty())
 		throw "MAP_EMPTY";
 
 	p_player.update(p_elapsedTimeInSeconds);
-	
-	if(!p_enemies.empty())
-		for(DynamicGameObject* enemy : p_enemies)
-			if(enemy)
-				if(enemy->isAlive())
-					enemy->update(p_elapsedTimeInSeconds);
+
+	for(DynamicGameObject* enemy : p_enemies)
+		if(enemy->isAlive())
+			enemy->update(p_elapsedTimeInSeconds);
 
 	//Collision
 	p_player.isGrounded(false);
 
 	for(DynamicGameObject* enemy : p_enemies)
-		if(enemy)
-			if(enemy->isAlive())
-			{
-				p_player.handleCollision(enemy);
-			}
+		if(enemy->isAlive())
+			p_player.handleCollision(enemy);
 
 
 	int amountOfEnemies = static_cast<int>(p_enemies.size());
@@ -131,6 +126,8 @@ void Game::update(Level& p_level, float p_elapsedTimeInSeconds, GameState& p_gam
 	for(std::vector<Tile*>& row : p_map)
 		for(Tile* tile : row)
 		{
+			if(!tile) continue;
+
 			p_player.handleCollision(tile);
 
 			for(DynamicGameObject* enemy : p_enemies)

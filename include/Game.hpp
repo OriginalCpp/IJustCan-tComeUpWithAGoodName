@@ -9,8 +9,8 @@
  */
 #pragma once
 #include "GameState.hpp"
-#include "Level.hpp"
-#include "Player.hpp"
+#include "classes/Level.hpp"
+#include "classes/Player.hpp"
 
 namespace Game
 {

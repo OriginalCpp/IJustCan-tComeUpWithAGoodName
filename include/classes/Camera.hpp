@@ -9,7 +9,7 @@
  */
 
 #pragma once
-#include "GameObject.hpp"
+#include "classes/GameObject.hpp"
 #include <memory>
 #include <SDL.h>
 
@@ -60,6 +60,10 @@ public:
     */
     std::unique_ptr<SDL_Point> trackObject();
 
+    /*
+    Calculates the offset like Camera::trackObject() but neglects m_limit. The m_objectToTrack will be (whatever his position is) at the left side of the screen after the rearrangement.
+    Remarks: Designed to be used exactly once after setting up a level!
+    */
     std::unique_ptr<SDL_Point> setUpCameraForBeginningOfLevel();
 
 private:
@@ -70,7 +74,8 @@ private:
     /*The GameObject which shall be tracked by the camera.*/
     GameObject* m_objectToTrack {nullptr};
 
-    /*Represents the area that the camera is limited to, so while this camera is active we won't see outside of this rectangle */
+    /*Represents the area that the camera is limited to (most of the time this will be the represent the borders of the map), 
+      so while this camera is active we won't see outside of this rectangle */
     SDL_Rect m_limit{0, 0, 0, 0};
 
     /*Tracking state of the camera, only tracks the m_objectToTrack if this is true.*/

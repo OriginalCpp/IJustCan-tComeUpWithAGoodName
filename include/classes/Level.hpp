@@ -10,11 +10,11 @@
 
 #pragma once
 
-#include "Camera.hpp"
-#include "DynamicGameObject.hpp"
-#include "Player.hpp"
-#include "RenderWindow.hpp"
-#include "Tile.hpp"
+#include "classes/Camera.hpp"
+#include "classes/DynamicGameObject.hpp"
+#include "classes/Player.hpp"
+#include "classes/RenderWindow.hpp"
+#include "classes/Tile.hpp"
 #include <vector>
 
 class Level

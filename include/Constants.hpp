@@ -44,23 +44,25 @@ namespace constants
         constexpr int h {1280};
     }
 
-    namespace camera
+    namespace cameraMargin
     {
         constexpr int w {256};
         constexpr int h {256};
     }
 
-    /* Except the player! */
+    /* The size of the biggest sprite in the game, excluding the player. */
     constexpr int largestSpriteWidth {tileSprite::w*scale};
     constexpr int largestSpriteHeight {tileSprite::h*scale};
 
     constexpr int maxAmountOfJumps {1};
-    constexpr int normalPlayerSpeed {400};
+    constexpr int defaultPlayerSpeed {400};
 
     /* The player can jump 3 tiles high and 4 tiles wide*/
     constexpr int normalJumpHeight {3*tileSprite::h*scale};
     constexpr int normalJumpWidth {4*tileSprite::w*scale}; 
 
-    /* Formula: 2h(xVelocity)² / (w²/4) */
-    constexpr int gravity{2*normalJumpHeight*normalPlayerSpeed*normalPlayerSpeed/(normalJumpWidth*normalJumpWidth/4)};
+    /*
+     Formula: 2*h*xVelocity² / (w²/4) 
+    */
+    constexpr int gravity{2*normalJumpHeight*defaultPlayerSpeed*defaultPlayerSpeed/(normalJumpWidth*normalJumpWidth/4)};
 }

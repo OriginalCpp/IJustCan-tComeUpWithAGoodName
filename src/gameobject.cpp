@@ -8,7 +8,7 @@
  * @copyright Copyright (c) 2021
  */
 
-#include "GameObject.hpp"
+#include "classes/GameObject.hpp"
 
 #include "Utils.hpp"
 #include <iostream>

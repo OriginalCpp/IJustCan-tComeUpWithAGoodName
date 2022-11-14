@@ -8,7 +8,7 @@
  * 
  */
 #pragma once
-#include "GameObject.hpp"
+#include "classes/GameObject.hpp"
 
 #include <SDL.h>
 

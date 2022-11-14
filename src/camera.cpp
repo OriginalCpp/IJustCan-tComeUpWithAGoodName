@@ -9,10 +9,10 @@
  * 
  */
 
-#include "Camera.hpp"
+#include "classes/Camera.hpp"
 
 #include "Constants.hpp"
-#include "Player.hpp"
+#include "classes/Player.hpp"
 #include "Utils.hpp"
 #include <iostream>
 #include <memory>
@@ -151,9 +151,6 @@ std::unique_ptr<SDL_Point> Camera::trackObject()
         else if (objectPoint.x >= m_margin.x + m_margin.w)
         {
             offset->x = m_margin.x + m_margin.w - objectPoint.x;
-
-            std::cout << "m_limit.x + offset->x: " << m_limit.x + offset->x << '\n';
-            std::cout << "new offset would be: " << constants::window::w - m_limit.x << '\n';
 
             if(m_limit.x + m_limit.w + offset->x < constants::window::w)
                 offset->x = constants::window::w - (m_limit.x + m_limit.w);

@@ -9,7 +9,7 @@
  * 
  */
 #pragma once
-#include "StaticGameObject.hpp"
+#include "classes/StaticGameObject.hpp"
 
 #include <SDL.h>
 

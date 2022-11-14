@@ -9,13 +9,13 @@
  */
 #pragma once
 
-#include "Camera.hpp"
-#include "DynamicGameObject.hpp"
-#include "GameObject.hpp"
+#include "classes/Camera.hpp"
+#include "classes/DynamicGameObject.hpp"
+#include "classes/GameObject.hpp"
 #include "GameState.hpp"
-#include "Player.hpp"
-#include "RenderWindow.hpp"
-#include "Tile.hpp"
+#include "classes/Player.hpp"
+#include "classes/RenderWindow.hpp"
+#include "classes/Tile.hpp"
 #include <memory>
 #include <numeric>
 #include <SDL.h>
@@ -82,5 +82,5 @@ namespace utils
 	\param p_gameObject
 	\returns True if the Object is in the window, false otherwise.
 	*/
-	bool isInWindow(const GameObject* p_gameObject);
+	bool isInWindow(const GameObject& p_gameObject);
 }

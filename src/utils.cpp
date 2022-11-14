@@ -12,13 +12,13 @@
 #define SDL_MAIN_HANDLED
 #include "Utils.hpp"
 
-#include "Camera.hpp"
-#include "GameObject.hpp"
+#include "classes/Camera.hpp"
+#include "classes/GameObject.hpp"
 #include "Constants.hpp"
 #include "KeyboardState.hpp"
-#include "Player.hpp"
-#include "RenderWindow.hpp"
-#include "Tile.hpp"
+#include "classes/Player.hpp"
+#include "classes/RenderWindow.hpp"
+#include "classes/Tile.hpp"
 #include <iostream>
 #include <memory>
 #include <SDL.h>
@@ -236,11 +236,8 @@ void utils::selectTiles(std::vector<std::vector<Tile*>>& p_tiles)
 
 
 
-bool utils::isInWindow(const GameObject* p_gameObject)
+bool utils::isInWindow(const GameObject& p_gameObject)
 {
-	if(!p_gameObject)
-		return false;
-
-	return(!((p_gameObject->getX() > constants::window::w) || (p_gameObject->getX() < -constants::largestSpriteWidth) 
-			|| (p_gameObject->getY() > constants::window::h) || (p_gameObject->getY() < -constants::largestSpriteHeight)));
+	return(!((p_gameObject.getX() > constants::window::w) || (p_gameObject.getX() < -constants::largestSpriteWidth) 
+			|| (p_gameObject.getY() > constants::window::h) || (p_gameObject.getY() < -constants::largestSpriteHeight)));
 }

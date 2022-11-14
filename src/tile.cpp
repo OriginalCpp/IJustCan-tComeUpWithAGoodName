@@ -8,7 +8,7 @@
  * @copyright Copyright (c) 2021
  * 
  */
-#include "Tile.hpp"
+#include "classes/Tile.hpp"
 
 #include <SDL.h>
 

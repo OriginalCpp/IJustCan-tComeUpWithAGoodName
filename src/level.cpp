@@ -8,13 +8,13 @@
  * @copyright Copyright (c) 2021
  * 
  */
-#include "Level.hpp"
+#include "classes/Level.hpp"
 
-#include "Camera.hpp"
+#include "classes/Camera.hpp"
 #include "Constants.hpp"
-#include "DynamicGameObject.hpp"
-#include "Player.hpp"
-#include "Slime.hpp"
+#include "classes/DynamicGameObject.hpp"
+#include "classes/Player.hpp"
+#include "classes/Slime.hpp"
 #include "Utils.hpp"
 #include <iostream>
 #include <fstream>
@@ -131,17 +131,15 @@ void Level::setUpLevel1()
 	if(!m_player || m_map->empty() || m_enemies->empty()) throw "FAILED_TO_LOAD_LEVEL_1";
 
 
-	SDL_Rect DefaultCameraMargin = utils::createRect((constants::window::w/2) - (constants::camera::w/2),
-									 11*constants::scale*constants::tileSprite::h - constants::camera::h, constants::camera::w, constants::camera::h);
+	SDL_Rect DefaultCameraMargin = utils::createRect((constants::window::w/2) - (constants::cameraMargin::w/2),
+									 11*constants::scale*constants::tileSprite::h - constants::cameraMargin::h, constants::cameraMargin::w, constants::cameraMargin::h);
 
 	SDL_Rect MapLimitRect = utils::createRect(0, 0,(*m_map)[0].size() * constants::tileSprite::wScaled, m_map->size() * constants::tileSprite::hScaled);
-	//DEBUG
-	std::cout << "m_map->size() * constants::tileSprite::wScaled: " << m_map->size() * constants::tileSprite::wScaled << ", " << "(*m_map)[0].size() * constants::tileSprite::hScaled: " << (*m_map)[0].size() * constants::tileSprite::hScaled << '\n';
 	
 	m_camera = new Camera(DefaultCameraMargin, m_player, MapLimitRect);
 
 	auto offset {m_camera->setUpCameraForBeginningOfLevel()};
-	offset->x -= (constants::window::w/2 - constants::camera::w); //? make clearer
+	offset->x -= (constants::window::w/2 - constants::cameraMargin::w); //? make clearer
 	applyOffset(*offset);
 
 	utils::selectTiles(*m_map);
@@ -222,14 +220,14 @@ void Level::renderLevel()
 	for (std::vector<Tile*> row : *m_map) 
 			for(Tile* tile : row)
 				if(tile)
-					m_windowToRenderTo.render(tile);
+					m_windowToRenderTo.render(*tile);
 
 	for(DynamicGameObject* enemy : *m_enemies)
 		if(enemy)
 			if(enemy->isAlive())
-				m_windowToRenderTo.render(enemy);
+				m_windowToRenderTo.render(*enemy);
 
-	m_windowToRenderTo.render(m_player);
+	m_windowToRenderTo.render(*m_player);
 }
 
 void Level::clearLevel()
@@ -255,12 +253,16 @@ void Level::clearLevel()
 
 Player& Level::getPlayer()
 {
+	if(!m_player) throw "CANNOT_RETURN_NONEXISTANT_PLAYER";
+
 	return *m_player;
 }
 
 
 Camera& Level::getCamera()
 {
+	if(!m_camera) throw "CANNOT_RETURN_NONEXISTANT_CAMERA";
+
 	return *m_camera;
 }
 
@@ -268,6 +270,8 @@ Camera& Level::getCamera()
 
 std::vector<std::vector<Tile*>>& Level::getMap() 
 {
+	if(!m_map) throw "CANNOT_RETURN_NONEXISTANT_MAP";
+
 	return *m_map;
 }
 
@@ -275,6 +279,8 @@ std::vector<std::vector<Tile*>>& Level::getMap()
 
 std::vector<DynamicGameObject*>& Level::getEnemies()
 {
+	if(!m_enemies) throw "CANNOT_RETURN_NONEXISTANT_ENEMIES";
+
 	return *m_enemies;
 }
 

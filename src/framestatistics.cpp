@@ -8,7 +8,7 @@
  * @copyright Copyright (c) 2021
  * 
  */
-#include "FrameStatistics.hpp"
+#include "classes/FrameStatistics.hpp"
 
 #include "Templates.hpp"
 #include "Utils.hpp"

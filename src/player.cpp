@@ -8,9 +8,9 @@
  * @copyright Copyright (c) 2021
  * 
  */
-#include "Player.hpp"
+#include "classes/Player.hpp"
 
-#include "GameObject.hpp"
+#include "classes/GameObject.hpp"
 #include "Constants.hpp"
 #include "Utils.hpp"
 #include <SDL.h>
@@ -20,7 +20,7 @@ Player::Player(SDL_Texture* p_tex, SDL_Rect p_src, SDL_Rect p_dst, SDL_FRect p_h
 	:DynamicGameObject{p_tex, p_src, p_dst, p_hitbox}
 {
 	setObjectType(ObjectType::player);
-	setSpeed(constants::normalPlayerSpeed);
+	setSpeed(constants::defaultPlayerSpeed);
 }
 
 
